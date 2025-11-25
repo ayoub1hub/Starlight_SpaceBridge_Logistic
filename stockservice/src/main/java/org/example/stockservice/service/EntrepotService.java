@@ -1,7 +1,7 @@
 package org.example.stockservice.service;
 
-import com.example.sslproject.stockservice.entity.Entrepot;
-import com.example.sslproject.stockservice.repository.EntrepotRepository;
+import org.example.stockservice.entity.Entrepot;
+import org.example.stockservice.repository.EntrepotRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

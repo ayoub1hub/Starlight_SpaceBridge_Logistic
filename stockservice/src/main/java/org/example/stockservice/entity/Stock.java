@@ -1,6 +1,8 @@
 package org.example.stockservice.entity;
 
-import com.example.sslproject.stockservice.entity.Entrepot;
+import org.example.stockservice.entity.Entrepot;
+import jakarta.persistence.*;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

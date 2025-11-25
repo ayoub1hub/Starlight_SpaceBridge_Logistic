@@ -1,7 +1,7 @@
 package org.example.commandeservice.controller;
 
-import org.example.sslproject.commandeservice.entity.PurchaseOrder;
-import org.example.sslproject.commandeservice.service.PurchaseOrderService;
+import org.example.commandeservice.entity.PurchaseOrder;
+import org.example.commandeservice.service.PurchaseOrderService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

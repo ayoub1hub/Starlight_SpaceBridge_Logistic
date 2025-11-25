@@ -1,10 +1,10 @@
 package org.example.livraisonservice.entity;
 
-import com.example.sslproject.livraisonservice.entity.Driver;
+
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
+
 import java.util.UUID;
 
 @Entity

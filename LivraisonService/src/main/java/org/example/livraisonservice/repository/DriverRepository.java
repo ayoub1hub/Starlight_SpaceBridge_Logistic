@@ -1,7 +1,7 @@
 package org.example.livraisonservice.repository;
 
 
-import com.example.sslproject.livraisonservice.entity.*;
+import org.example.livraisonservice.entity.Driver;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.UUID;
 

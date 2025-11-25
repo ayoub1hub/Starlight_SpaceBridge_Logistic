@@ -1,6 +1,6 @@
 package org.example.stockservice.repository;
 
-import com.example.sslproject.stockservice.entity.Person;
+import org.example.stockservice.entity.Person;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;

@@ -1,7 +1,7 @@
 package org.example.commandeservice.service;
 
-import com.example.sslproject.commandeservice.entity.PurchaseOrder;
-import com.example.sslproject.commandeservice.repository.PurchaseOrderRepository;
+import org.example.commandeservice.entity.PurchaseOrder;
+import org.example.commandeservice.repository.PurchaseOrderRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

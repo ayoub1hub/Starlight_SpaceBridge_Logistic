@@ -16,8 +16,28 @@ public class PurchaseOrderService {
         this.repository = repository;
     }
 
-    public List<PurchaseOrder> getAll() { return repository.findAll(); }
-    public Optional<PurchaseOrder> getById(UUID id) { return repository.findById(id); }
-    public PurchaseOrder save(PurchaseOrder order) { return repository.save(order); }
-    public void delete(UUID id) { repository.deleteById(id); }
+    public List<PurchaseOrder> getAll() {
+        return repository.findAll();
+    }
+
+    public Optional<PurchaseOrder> getById(UUID id) {
+        return repository.findById(id);
+    }
+
+    public PurchaseOrder save(PurchaseOrder order) {
+        return repository.save(order);
+    }
+
+    public void delete(UUID id) {
+        repository.deleteById(id);
+    }
+
+    public PurchaseOrder update(UUID id, PurchaseOrder order) {
+        order.setId(id);
+        return repository.save(order);
+    }
+
+    public boolean exists(UUID id) {
+        return repository.existsById(id);
+    }
 }

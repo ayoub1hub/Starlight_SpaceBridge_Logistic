@@ -1,8 +1,9 @@
-package org.example.commandeservice.entity;
+package CommandeService.src.main.java.org.example.commandeservice.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
+import org.example.commandeservice.entity.Supplier;
+import org.example.commandeservice.entity.PurchaseOrderItem;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;

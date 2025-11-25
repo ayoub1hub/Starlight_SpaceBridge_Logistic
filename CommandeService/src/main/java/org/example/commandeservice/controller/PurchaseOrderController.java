@@ -1,7 +1,7 @@
-package org.example.commandeservice.controller;
+package CommandeService.src.main.java.org.example.commandeservice.controller;
 
-import org.example.commandeservice.entity.PurchaseOrder;
-import org.example.commandeservice.service.PurchaseOrderService;
+import CommandeService.src.main.java.org.example.commandeservice.entity.PurchaseOrder;
+import CommandeService.src.main.java.org.example.commandeservice.service.PurchaseOrderService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

@@ -1,6 +1,6 @@
-package org.example.stockservice.repository;
+package stockservice.src.main.java.org.example.stockservice.repository;
 
-import org.example.stockservice.entity.Person;
+import stockservice.src.main.java.org.example.stockservice.entity.Person;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;

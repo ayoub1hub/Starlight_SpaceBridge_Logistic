@@ -1,11 +1,9 @@
-package org.example.stockservice.entity;
+package stockservice.src.main.java.org.example.stockservice.entity;
 
-import org.example.stockservice.entity.Entrepot;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.util.UUID;
 
 @Entity

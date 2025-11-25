@@ -1,7 +1,7 @@
-package org.example.stockservice.controller;
+package stockservice.src.main.java.org.example.stockservice.controller;
 
-import com.example.sslproject.stockservice.entity.Entrepot;
-import com.example.sslproject.stockservice.service.EntrepotService;
+import stockservice.src.main.java.org.example.stockservice.entity.Entrepot;
+import stockservice.src.main.java.org.example.stockservice.service.EntrepotService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

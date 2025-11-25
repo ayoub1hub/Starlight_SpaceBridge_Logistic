@@ -1,7 +1,7 @@
-package org.example.stockservice.entity;
+package stockservice.src.main.java.org.example.stockservice.entity;
 
-import com.example.sslproject.stockservice.entity.Stock;
-
+import jakarta.persistence.*;
+import lombok.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;

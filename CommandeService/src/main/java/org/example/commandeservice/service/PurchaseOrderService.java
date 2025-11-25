@@ -1,4 +1,4 @@
-package org.example.commandeservice.service;
+package CommandeService.src.main.java.org.example.commandeservice.service;
 
 import com.example.sslproject.commandeservice.entity.PurchaseOrder;
 import com.example.sslproject.commandeservice.repository.PurchaseOrderRepository;

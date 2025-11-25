@@ -1,7 +1,7 @@
-package org.example.stockservice.service;
+package stockservice.src.main.java.org.example.stockservice.service;
 
-import com.example.sslproject.stockservice.entity.Entrepot;
-import com.example.sslproject.stockservice.repository.EntrepotRepository;
+import stockservice.src.main.java.org.example.stockservice.entity.Entrepot;
+import stockservice.src.main.java.org.example.stockservice.repository.EntrepotRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

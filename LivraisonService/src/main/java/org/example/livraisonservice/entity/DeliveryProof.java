@@ -1,4 +1,4 @@
-package org.example.livraisonservice.entity;
+package LivraisonService.src.main.java.org.example.livraisonservice.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

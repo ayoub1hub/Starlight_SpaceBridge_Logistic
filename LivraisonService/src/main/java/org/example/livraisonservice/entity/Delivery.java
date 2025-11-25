@@ -1,8 +1,5 @@
-package org.example.livraisonservice.entity;
+package LivraisonService.src.main.java.org.example.livraisonservice.entity;
 
-import com.example.sslproject.livraisonservice.entity.DeliveryItem;
-import com.example.sslproject.livraisonservice.entity.DeliveryProof;
-import com.example.sslproject.livraisonservice.entity.DeliveryTracking;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;

@@ -4,60 +4,49 @@ server:
 spring:
   application:
     name: api-gateway
-
   cloud:
     gateway:
-      globalcors:
-        cors-configurations:
-          '[/**]':
-            allowed-origins: "*"
-            allowed-methods:
-              - GET
-              - POST
-              - PUT
-              - DELETE
-              - OPTIONS
-            allowed-headers: "*"
-            allow-credentials: true
-
+      discovery:
+        locator:
+          enabled: true  # Active le routage par nom de service Eureka
+          lower-case-service-id: true
       routes:
-        - id: commande-service
-          uri: lb://COMMANDE-SERVICE
-          predicates:
-            - Path=/api/commandes/**
-          filters:
-            - StripPrefix=0
-
-        - id: comptabilite-service
-          uri: lb://COMPTABILITE-SERVICE
-          predicates:
-            - Path=/api/comptabilite/**
-          filters:
-            - StripPrefix=0
-
+        # Route explicite pour LivraisonService
         - id: livraison-service
-          uri: lb://LIVRAISON-SERVICE
+          uri: lb://LIVRAISONSERVICE  # nom enregistré dans Eureka
           predicates:
             - Path=/api/livraisons/**
           filters:
-            - StripPrefix=0
+            - RewritePath=/api/livraisons/(?<segment>.*), /api/deliveries/$\{segment}
 
+        # Route explicite pour StockService
         - id: stock-service
-          uri: lb://STOCK-SERVICE
+          uri: lb://STOCKSERVICE
           predicates:
             - Path=/api/stocks/**
           filters:
-            - StripPrefix=0
+            - RewritePath=/api/stocks/(?<segment>.*), /api/$\{segment}
+
+        # (Optionnel) Route vers tous les services via /services/{serviceId}/**
+        - id: eureka-proxy
+          uri: lb://eureka-server
+          predicates:
+            - Path=/eureka/**
+          filters:
+            - RewritePath=/eureka/(?<segment>.*), /$\{segment}
 
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
-    fetch-registry: true
-    register-with-eureka: true
+      defaultZone: http://eureka-server:8761/eureka/
   instance:
     prefer-ip-address: true
 
-logging:
-  level:
-    org.springframework.cloud.gateway: DEBUG
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+  endpoint:
+    gateway:
+      enabled: true

@@ -1,13 +1,13 @@
-package org.example.apigateway;
+package ApiGateway.src.main.java.org.example.apigateway;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 @SpringBootApplication
+@EnableDiscoveryClient // ← ajoutez cette annotation
 public class ApiGatewayApplication {
-
     public static void main(String[] args) {
         SpringApplication.run(ApiGatewayApplication.class, args);
     }
-
 }

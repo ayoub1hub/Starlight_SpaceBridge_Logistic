@@ -1,37 +1,34 @@
 package stockservice.src.main.java.org.example.stockservice.controller;
 
-import stockservice.src.main.java.org.example.stockservice.entity.Entrepot;
-import stockservice.src.main.java.org.example.stockservice.service.EntrepotService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import stockservice.src.main.java.org.example.stockservice.dto.EntrepotDto;
+import stockservice.src.main.java.org.example.stockservice.service.EntrepotService;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/warehouses")
+@RequestMapping("/api/entrepots")
+@CrossOrigin(origins = "*")
 public class EntrepotController {
-    private final EntrepotService entrepotService;
 
-    public EntrepotController(EntrepotService entrepotService) {
-        this.entrepotService = entrepotService;
-    }
+    @Autowired
+    private EntrepotService entrepotService;
 
     @GetMapping
-    public List<Entrepot> getAll() { return entrepotService.getAll(); }
-
-    @GetMapping("/{id}")
-    public Optional<Entrepot> getById(@PathVariable UUID id) { return entrepotService.getById(id); }
-
-    @PostMapping
-    public Entrepot create(@RequestBody Entrepot entrepot) { return entrepotService.save(entrepot); }
-
-    @PutMapping("/{id}")
-    public Entrepot update(@PathVariable UUID id, @RequestBody Entrepot entrepot) {
-        entrepot.setId(id);
-        return entrepotService.save(entrepot);
+    public ResponseEntity<List<EntrepotDto>> getAllEntrepots() {
+        return ResponseEntity.ok(entrepotService.getAllEntrepots());
     }
 
-    @DeleteMapping("/{id}")
-    public void delete(@PathVariable UUID id) { entrepotService.delete(id); }
+    @GetMapping("/{id}")
+    public ResponseEntity<EntrepotDto> getEntrepot(@PathVariable UUID id) {
+        return ResponseEntity.ok(entrepotService.getEntrepotById(id));
+    }
+
+    @PostMapping
+    public ResponseEntity<EntrepotDto> createEntrepot(@RequestBody EntrepotDto dto) {
+        return ResponseEntity.ok(entrepotService.createEntrepot(dto));
+    }
 }

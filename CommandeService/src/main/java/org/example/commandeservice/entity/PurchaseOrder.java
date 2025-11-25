@@ -1,4 +1,4 @@
-package CommandeService.src.main.java.org.example.commandeservice.entity;
+package org.example.commandeservice.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

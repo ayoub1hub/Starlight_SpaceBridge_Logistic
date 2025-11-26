@@ -1,14 +1,11 @@
-package stockservice.src.main.java.org.example.stockservice.service;
+package org.example.stockservice.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import stockservice.src.main.java.org.example.stockservice.dto.StockDto;
-import stockservice.src.main.java.org.example.stockservice.entity.Entrepot;
-import stockservice.src.main.java.org.example.stockservice.entity.Produit;
-import stockservice.src.main.java.org.example.stockservice.entity.Stock;
-import stockservice.src.main.java.org.example.stockservice.repository.EntrepotRepository;
-import stockservice.src.main.java.org.example.stockservice.repository.ProduitRepository;
-import stockservice.src.main.java.org.example.stockservice.repository.StockRepository;
+import org.example.stockservice.dto.StockDto;
+import org.example.stockservice.entity.Entrepot;
+import org.example.stockservice.entity.*;
+import org.example.stockservice.repository.*;
 
 import java.util.List;
 import java.util.UUID;

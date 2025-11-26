@@ -1,7 +1,7 @@
-package LivraisonService.src.main.java.org.example.livraisonservice.controller;
+package org.example.livraisonservice.controller;
 
-import LivraisonService.src.main.java.org.example.livraisonservice.dto.DeliveryDto;
-import LivraisonService.src.main.java.org.example.livraisonservice.service.DeliveryService;
+import org.example.livraisonservice.dto.DeliveryDto;
+import org.example.livraisonservice.service.DeliveryService;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;

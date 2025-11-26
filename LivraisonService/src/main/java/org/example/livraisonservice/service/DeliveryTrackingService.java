@@ -1,8 +1,8 @@
-package LivraisonService.src.main.java.org.example.livraisonservice.service;
+package org.example.livraisonservice.service;
 
-import LivraisonService.src.main.java.org.example.livraisonservice.dto.DeliveryTrackingDto;
-import LivraisonService.src.main.java.org.example.livraisonservice.entity.DeliveryTracking;
-import LivraisonService.src.main.java.org.example.livraisonservice.repository.DeliveryTrackingRepository;
+import org.example.livraisonservice.dto.DeliveryTrackingDto;
+import org.example.livraisonservice.entity.DeliveryTracking;
+import org.example.livraisonservice.repository.DeliveryTrackingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

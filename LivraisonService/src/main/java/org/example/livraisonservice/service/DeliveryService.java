@@ -1,10 +1,8 @@
-package LivraisonService.src.main.java.org.example.livraisonservice.service;
+package org.example.livraisonservice.service;
 
-import LivraisonService.src.main.java.org.example.livraisonservice.dto.DeliveryDto;
-import LivraisonService.src.main.java.org.example.livraisonservice.entity.Delivery;
-import LivraisonService.src.main.java.org.example.livraisonservice.entity.Driver;
-import LivraisonService.src.main.java.org.example.livraisonservice.repository.DeliveryRepository;
-import LivraisonService.src.main.java.org.example.livraisonservice.repository.DriverRepository;
+import org.example.livraisonservice.dto.DeliveryDto;
+import org.example.livraisonservice.entity.*;
+import org.example.livraisonservice.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

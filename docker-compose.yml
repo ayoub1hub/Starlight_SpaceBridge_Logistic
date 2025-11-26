@@ -1,0 +1,79 @@
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust  # Désactive l'authentification !!!
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  init-db:
+    image: postgres:15
+    depends_on:
+      - postgres
+    environment:
+      PGPASSWORD: ""  # optionnel, mais cohérent
+    command: |
+      bash -c "
+        sleep 10 &&
+        psql -h postgres -U postgres -c 'CREATE DATABASE stock_db;' &&
+        psql -h postgres -U postgres -c 'CREATE DATABASE livraison_db;'
+      "
+
+  eureka-server:
+    build: ./eureka_server
+    ports:
+      - "8761:8761"
+    networks:
+      - logistics
+
+  stock-service:
+    build: ./stockservice
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/stock_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: ""  # ← vide
+      EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE: http://eureka-server:8761/eureka/
+    depends_on:
+      - init-db
+      - eureka-server
+    networks:
+      - logistics
+
+  livraison-service:
+    build: ./livraison-service
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/livraison_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: ""  # ← vide
+      EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE: http://eureka-server:8761/eureka/
+    depends_on:
+      - init-db
+      - eureka-server
+    networks:
+      - logistics
+
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE: http://eureka-server:8761/eureka/
+    depends_on:
+      - eureka-server
+    networks:
+      - logistics
+
+volumes:
+  pgdata:
+
+networks:
+  logistics:
+    driver: bridge

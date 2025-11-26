@@ -1,10 +1,10 @@
-package stockservice.src.main.java.org.example.stockservice.controller;
+package org.example.stockservice.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import stockservice.src.main.java.org.example.stockservice.dto.StockDto;
-import stockservice.src.main.java.org.example.stockservice.service.StockService;
+import org.example.stockservice.dto.StockDto;
+import org.example.stockservice.service.StockService;
 
 import java.util.List;
 import java.util.UUID;

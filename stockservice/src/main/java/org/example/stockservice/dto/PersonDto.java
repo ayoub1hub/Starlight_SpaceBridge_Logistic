@@ -1,4 +1,4 @@
-package stockservice.src.main.java.org.example.stockservice.dto;
+package org.example.stockservice.dto;
 
 import lombok.*;
 

@@ -1,4 +1,4 @@
-package LivraisonService.src.main.java.org.example.livraisonservice.dto;
+package org.example.livraisonservice.dto;
 
 import java.math.BigDecimal;
 import lombok.*;

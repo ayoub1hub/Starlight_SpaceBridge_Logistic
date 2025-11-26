@@ -2,17 +2,13 @@ package org.example.livraisonservice.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.*;
 
 @Entity
 @Table(name = "deliveries")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class Delivery {
 
     @Id
@@ -34,8 +30,8 @@ public class Delivery {
     private Double destinationLatitude;
     private Double destinationLongitude;
 
-    private String status;
-    private String priority;
+    private String status;   // e.g. "Scheduled", "In Transit", "Delivered", "Cancelled"
+    private String priority; // e.g. "High", "Normal", "Low"
 
     private LocalDate scheduledDate;
     private LocalDateTime pickedUpAt;
@@ -58,5 +54,4 @@ public class Delivery {
 
     @OneToOne(mappedBy = "delivery", cascade = CascadeType.ALL, orphanRemoval = true)
     private DeliveryProof proof;
-
 }

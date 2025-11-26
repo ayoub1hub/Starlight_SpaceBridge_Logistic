@@ -1,8 +1,7 @@
-package stockservice.src.main.java.org.example.stockservice.entity;
+package org.example.stockservice.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
 

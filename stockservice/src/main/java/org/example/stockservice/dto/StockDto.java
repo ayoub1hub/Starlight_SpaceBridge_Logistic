@@ -21,4 +21,5 @@ public class StockDto {
     private LocalDate lastRestockedAt;
     private LocalDate expiryDate;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

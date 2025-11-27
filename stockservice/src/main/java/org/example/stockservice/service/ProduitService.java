@@ -1,10 +1,10 @@
 package org.example.stockservice.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.example.stockservice.dto.ProduitDto;
 import org.example.stockservice.entity.Produit;
+import org.example.stockservice.mapper.ProduitMapper;
 import org.example.stockservice.repository.ProduitRepository;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
@@ -13,19 +13,24 @@ import java.util.stream.Collectors;
 @Service
 public class ProduitService {
 
-    @Autowired
-    private ProduitRepository produitRepository;
+    private final ProduitRepository produitRepository;
+    private final ProduitMapper produitMapper; // Injected mapper
+
+    public ProduitService(ProduitRepository produitRepository, ProduitMapper produitMapper) {
+        this.produitRepository = produitRepository;
+        this.produitMapper = produitMapper;
+    }
 
     public List<ProduitDto> getAllProduits() {
         return produitRepository.findAll().stream()
-                .map(this::mapToDto)
+                .map(produitMapper::toDto)
                 .collect(Collectors.toList());
     }
 
     public ProduitDto getProduitById(UUID id) {
         Produit produit = produitRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Produit non trouvé"));
-        return mapToDto(produit);
+        return produitMapper.toDto(produit);
     }
 
     public ProduitDto createProduit(ProduitDto dto) {
@@ -33,34 +38,8 @@ public class ProduitService {
             throw new IllegalArgumentException("SKU déjà utilisé : " + dto.getSku());
         }
 
-        Produit produit = new Produit();
-        produit.setSku(dto.getSku());
-        produit.setName(dto.getName());
-        produit.setDescription(dto.getDescription());
-        produit.setCategory(dto.getCategory());
-        produit.setUnitPrice(dto.getUnitPrice());
-        produit.setWeight(dto.getWeight());
-        produit.setDimensions(dto.getDimensions());
-        produit.setIsHazardous(dto.getHazardous());
-        produit.setRequiresSpecialHandling(dto.getRequiresSpecialHandling());
-
+        Produit produit = produitMapper.toEntity(dto);
         Produit saved = produitRepository.save(produit);
-        return mapToDto(saved);
-    }
-
-    private ProduitDto mapToDto(Produit entity) {
-        ProduitDto dto = new ProduitDto();
-        dto.setId(entity.getId());
-        dto.setSku(entity.getSku());
-        dto.setName(entity.getName());
-        dto.setDescription(entity.getDescription());
-        dto.setCategory(entity.getCategory());
-        dto.setUnitPrice(entity.getUnitPrice());
-        dto.setWeight(entity.getWeight());
-        dto.setDimensions(entity.getDimensions());
-        dto.setHazardous(entity.getIsHazardous());
-        dto.setRequiresSpecialHandling(entity.getRequiresSpecialHandling());
-        dto.setCreatedAt(entity.getCreatedAt());
-        return dto;
+        return produitMapper.toDto(saved);
     }
 }

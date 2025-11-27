@@ -16,7 +16,8 @@ public class ProduitDto {
     private Double unitPrice;
     private Double weight;
     private String dimensions;
-    private Boolean hazardous;
+    private Boolean isHazardous;
     private Boolean requiresSpecialHandling;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

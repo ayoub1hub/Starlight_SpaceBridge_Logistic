@@ -31,4 +31,13 @@ public class DriverController {
         DriverDto updated = driverService.updateDriverLocation(id, lat, lng);
         return ResponseEntity.ok(updated);
     }
+
+    @PutMapping("/{id}/status")
+    public ResponseEntity<DriverDto> updateStatus(
+            @PathVariable UUID id,
+            @RequestParam String status) {
+
+        DriverDto updated = driverService.updateDriverStatus(id, status);
+        return ResponseEntity.ok(updated);
+    }
 }

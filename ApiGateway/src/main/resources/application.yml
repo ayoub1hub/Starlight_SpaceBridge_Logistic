@@ -9,7 +9,7 @@ spring:
     gateway:
       globalcors:
         cors-configurations:
-          '[/**]':
+          '[/]':
             allowed-origins: "*"
             allowed-methods:
               - GET
@@ -60,4 +60,4 @@ eureka:
 
 logging:
   level:
-    org.springframework.cloud.gateway: DEBUG
+    org.springframeworkk.cloud.gateway: DEBUG

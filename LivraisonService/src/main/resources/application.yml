@@ -7,7 +7,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/livraison_db
     username: postgres
-    password: ""
+    password: postgres
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -22,9 +22,9 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
-    instance:
-      prefer-ip-address: true
-      instance-id: "${spring.application.name}:${server.port}"
+  instance:
+     prefer-ip-address: true
+     instance-id: "${spring.application.name}:${server.port}"
 
 management:
   endpoints:

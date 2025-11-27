@@ -4,7 +4,7 @@ services:
     environment:
       POSTGRES_DB: postgres
       POSTGRES_USER: postgres
-      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_HOST_AUTH_METHOD: trust  # Désactive l'authentification !!!
     ports:
       - "5432:5432"
     volumes:
@@ -15,7 +15,7 @@ services:
     depends_on:
       - postgres
     environment:
-      PGPASSWORD: ""
+      PGPASSWORD: ""  # optionnel, mais cohérent
     command: |
       bash -c "
         sleep 10 &&

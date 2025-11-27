@@ -32,5 +32,5 @@ public class Entrepot {
     private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "entrepot", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Stock> stocks = new ArrayList<>();
+    private List<Stock> stocks ;
 }

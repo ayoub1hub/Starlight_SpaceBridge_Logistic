@@ -13,6 +13,7 @@ public class EntrepotDto {
     private String address;
     private Double capacity;
     private PersonDto responsable; // objet imbriqué
-    private Boolean active;
+    private Boolean isActive;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

@@ -7,6 +7,10 @@ import org.example.stockservice.mapper.EntrepotMapper;
 import org.example.stockservice.repository.EntrepotRepository;
 import org.example.stockservice.repository.PersonRepository;
 import org.springframework.stereotype.Service;
+import org.example.stockservice.dto.EntrepotDto;
+import org.example.stockservice.dto.PersonDto;
+import org.example.stockservice.entity.*;
+import org.example.stockservice.repository.*;
 
 import java.util.List;
 import java.util.UUID;

@@ -1,7 +1,8 @@
 package org.example.commandeservice.entity;
 
 
-import com.example.sslproject.commandeservice.entity.PurchaseOrder;
+import jakarta.persistence.*;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -9,12 +10,17 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "customs_declarations")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class CustomsDeclaration {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
+
 
     @OneToOne
     @JoinColumn(name = "purchase_order_id")

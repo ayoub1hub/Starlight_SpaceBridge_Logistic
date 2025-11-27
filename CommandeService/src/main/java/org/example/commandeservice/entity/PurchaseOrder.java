@@ -2,7 +2,8 @@ package org.example.commandeservice.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
+import org.example.commandeservice.entity.Supplier;
+import org.example.commandeservice.entity.PurchaseOrderItem;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -37,7 +38,7 @@ public class PurchaseOrder {
     private String notes;
 
     private String customsStatus;
-    private String trackingNumber;
+    private String orderNumber;
 
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt;

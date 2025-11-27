@@ -1,10 +1,12 @@
 package org.example.stockservice.repository;
 
-
-import org.example.stockservice.entity.Produit;
 import org.springframework.data.jpa.repository.JpaRepository;
-
+import org.springframework.stereotype.Repository;
+import org.example.stockservice.entity.Produit;
+import java.util.Optional;
 import java.util.UUID;
 
-
-public interface ProduitRepository extends JpaRepository<Produit, UUID> {}
+@Repository
+public interface ProduitRepository extends JpaRepository<Produit, UUID> {
+    Optional<Produit> findBySku(String sku);
+}

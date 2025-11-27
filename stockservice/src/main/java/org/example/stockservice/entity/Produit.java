@@ -2,8 +2,6 @@ package org.example.stockservice.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.stockservice.entity.Stock;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,5 +37,5 @@ public class Produit {
     private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "produit", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Stock> stocks = new ArrayList<>();
+    private List<Stock> stocks ;
 }

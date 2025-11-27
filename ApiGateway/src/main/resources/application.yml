@@ -9,7 +9,7 @@ spring:
     gateway:
       globalcors:
         cors-configurations:
-          '[/**]':
+          '[/]':
             allowed-origins: "*"
             allowed-methods:
               - GET
@@ -24,14 +24,14 @@ spring:
         - id: commande-service
           uri: lb://COMMANDE-SERVICE
           predicates:
-            - Path=/api/commandes/**
+            - Path=/api/purchase-orders/**
           filters:
             - StripPrefix=0
 
         - id: comptabilite-service
           uri: lb://COMPTABILITE-SERVICE
           predicates:
-            - Path=/api/comptabilite/**
+            - Path=/api/invoices/**
           filters:
             - StripPrefix=0
 
@@ -60,4 +60,4 @@ eureka:
 
 logging:
   level:
-    org.springframework.cloud.gateway: DEBUG
+    org.springframeworkk.cloud.gateway: DEBUG

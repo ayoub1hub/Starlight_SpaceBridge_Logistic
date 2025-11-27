@@ -21,6 +21,5 @@ public class PurchaseOrderResponse {
 
     private String status;
     private Double totalAmount;
-    private String trackingNumber;
     private CustomsDeclarationDto customsDeclaration;
 }

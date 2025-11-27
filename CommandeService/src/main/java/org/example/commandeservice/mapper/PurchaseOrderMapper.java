@@ -1,26 +1,56 @@
 package org.example.commandeservice.mapper;
 
-
-import org.example.commandeservice.entity.PurchaseOrder;
 import org.example.commandeservice.dto.PurchaseOrderRequest;
 import org.example.commandeservice.dto.PurchaseOrderResponse;
+import org.example.commandeservice.entity.PurchaseOrder;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.ReportingPolicy;
 
-import java.util.UUID;
-
-
-@Mapper(componentModel = "spring", uses = {SupplierMapper.class, PurchaseOrderItemMapper.class}) // <-- ADDED 'uses'
+@Mapper(
+        componentModel = "spring",
+        unmappedTargetPolicy = ReportingPolicy.IGNORE,
+        uses = { SupplierMapper.class, PurchaseOrderItemMapper.class }
+)
 public interface PurchaseOrderMapper {
-    // Converts Entity to Response DTO for sending data out
+
+    // Entity → Response DTO
+    @Mapping(source = "supplier", target = "supplier") // MapStruct uses SupplierMapper automatically
+    @Mapping(source = "orderNumber", target = "orderNumber")
+    @Mapping(source = "expectedDeliveryDate", target = "expectedDeliveryDate")
+    @Mapping(source = "status", target = "status")
+    @Mapping(source = "totalAmount", target = "totalAmount")
+    @Mapping(source = "customsDeclaration", target = "customsDeclaration")
     PurchaseOrderResponse toDto(PurchaseOrder entity);
 
-    // Converts Request DTO to Entity for saving data in
-    @Mapping(target = "id", ignore = true) // Database generates ID
-
+    // Request DTO → Entity
+    @Mapping(source = "orderNumber", target = "orderNumber")
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "supplier", ignore = true)
+    @Mapping(target = "items", ignore = true)
+    @Mapping(target = "actualDeliveryDate", ignore = true)
+    @Mapping(target = "warehouseId", ignore = true)
+    @Mapping(target = "currency", ignore = true)
+    @Mapping(target = "paymentStatus", ignore = true)
+    @Mapping(target = "notes", ignore = true)
+    @Mapping(target = "customsStatus", ignore = true)
     PurchaseOrder toEntity(PurchaseOrderRequest dto);
 
-    // Allows mapping existing entities for updates
-    @Mapping(target = "id", source = "id")
-    PurchaseOrder toEntityForUpdate(UUID id, PurchaseOrderRequest dto);
+    // Update existing entity
+    @Mapping(source = "orderNumber", target = "orderNumber")
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "supplier", ignore = true)
+    @Mapping(target = "items", ignore = true)
+    @Mapping(target = "actualDeliveryDate", ignore = true)
+    @Mapping(target = "warehouseId", ignore = true)
+    @Mapping(target = "currency", ignore = true)
+    @Mapping(target = "paymentStatus", ignore = true)
+    @Mapping(target = "notes", ignore = true)
+    @Mapping(target = "customsStatus", ignore = true)
+    void updateEntityFromDto(PurchaseOrderRequest dto, @MappingTarget PurchaseOrder entity);
 }

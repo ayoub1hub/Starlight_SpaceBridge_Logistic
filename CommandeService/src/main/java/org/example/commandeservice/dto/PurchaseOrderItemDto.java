@@ -5,14 +5,15 @@ import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class PurchaseOrderItemDto {
-    private Long id;
-    private String productCode;
+    private UUID id;
+    private UUID purchaseOrderId;
     private Integer quantity;
     private BigDecimal unitPrice;
 

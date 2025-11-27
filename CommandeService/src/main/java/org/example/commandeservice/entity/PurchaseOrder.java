@@ -1,4 +1,4 @@
-package CommandeService.src.main.java.org.example.commandeservice.entity;
+package org.example.commandeservice.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -38,7 +38,7 @@ public class PurchaseOrder {
     private String notes;
 
     private String customsStatus;
-    private String trackingNumber;
+    private String orderNumber;
 
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt;

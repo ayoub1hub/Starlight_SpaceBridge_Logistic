@@ -1,23 +1,76 @@
-package stockservice.src.main.java.org.example.stockservice.service;
+package org.example.stockservice.service;
 
-import stockservice.src.main.java.org.example.stockservice.entity.Entrepot;
-import stockservice.src.main.java.org.example.stockservice.repository.EntrepotRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.example.stockservice.dto.EntrepotDto;
+import org.example.stockservice.dto.PersonDto;
+import org.example.stockservice.entity.*;
+import org.example.stockservice.repository.*;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class EntrepotService {
-    private final EntrepotRepository entrepotRepo;
 
-    public EntrepotService(EntrepotRepository entrepotRepo) {
-        this.entrepotRepo = entrepotRepo;
+    @Autowired
+    private EntrepotRepository entrepotRepository;
+
+    @Autowired
+    private PersonRepository personRepository;
+
+    public List<EntrepotDto> getAllEntrepots() {
+        return entrepotRepository.findAll().stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
     }
 
-    public List<Entrepot> getAll() { return entrepotRepo.findAll(); }
-    public Optional<Entrepot> getById(UUID id) { return entrepotRepo.findById(id); }
-    public Entrepot save(Entrepot e) { return entrepotRepo.save(e); }
-    public void delete(UUID id) { entrepotRepo.deleteById(id); }
+    public EntrepotDto getEntrepotById(UUID id) {
+        Entrepot entrepot = entrepotRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Entrepôt non trouvé"));
+        return mapToDto(entrepot);
+    }
+
+    public EntrepotDto createEntrepot(EntrepotDto dto) {
+        Entrepot entrepot = new Entrepot();
+        entrepot.setName(dto.getName());
+        entrepot.setAddress(dto.getAddress());
+        entrepot.setCapacity(dto.getCapacity());
+        entrepot.setIsActive(dto.getActive() != null ? dto.getActive() : true);
+
+        if (dto.getResponsable() != null && dto.getResponsable().getId() != null) {
+            Person responsable = personRepository.findById(dto.getResponsable().getId())
+                    .orElseThrow(() -> new RuntimeException("Responsable non trouvé"));
+            entrepot.setResponsable(responsable);
+        }
+
+        Entrepot saved = entrepotRepository.save(entrepot);
+        return mapToDto(saved);
+    }
+
+    private EntrepotDto mapToDto(Entrepot entity) {
+        EntrepotDto dto = new EntrepotDto();
+        dto.setId(entity.getId());
+        dto.setName(entity.getName());
+        dto.setAddress(entity.getAddress());
+        dto.setCapacity(entity.getCapacity());
+        dto.setActive(entity.getIsActive());
+        dto.setCreatedAt(entity.getCreatedAt());
+        if (entity.getResponsable() != null) {
+            dto.setResponsable(mapPersonToDto(entity.getResponsable()));
+        }
+        return dto;
+    }
+
+    private PersonDto mapPersonToDto(Person person) {
+        PersonDto dto = new PersonDto();
+        dto.setId(person.getId());
+        dto.setName(person.getName());
+        dto.setPhone(person.getPhone());
+        dto.setEmail(person.getEmail());
+        dto.setType(person.getType());
+        dto.setActive(person.getIsActive());
+        return dto;
+    }
 }

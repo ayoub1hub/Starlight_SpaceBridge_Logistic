@@ -1,11 +1,14 @@
-package CommandeService.src.main.java.org.example.commandeservice.controller;
 
-import CommandeService.src.main.java.org.example.commandeservice.entity.PurchaseOrder;
-import CommandeService.src.main.java.org.example.commandeservice.service.PurchaseOrderService;
+
+package org.example.commandeservice.controller;
+
+import org.example.commandeservice.dto.PurchaseOrderRequest;
+import org.example.commandeservice.dto.PurchaseOrderResponse;
+import org.example.commandeservice.service.PurchaseOrderService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -19,20 +22,36 @@ public class PurchaseOrderController {
     }
 
     @GetMapping
-    public List<PurchaseOrder> getAll() { return service.getAll(); }
+    public List<PurchaseOrderResponse> getAll() {
+        return service.getAll();
+    }
 
     @GetMapping("/{id}")
-    public Optional<PurchaseOrder> getById(@PathVariable UUID id) { return service.getById(id); }
+    public ResponseEntity<PurchaseOrderResponse> getById(@PathVariable UUID id) {
+        // Use ResponseEntity for proper HTTP status handling
+        return ResponseEntity.ok(service.getById(id));
+    }
 
     @PostMapping
-    public PurchaseOrder create(@RequestBody PurchaseOrder order) { return service.save(order); }
+    // Consumes DTO, returns DTO
+    public ResponseEntity<PurchaseOrderResponse> create(@RequestBody PurchaseOrderRequest request) {
+        PurchaseOrderResponse response = service.create(request);
+        // Use 201 Created status
+        return ResponseEntity.status(201).body(response);
+    }
 
     @PutMapping("/{id}")
-    public PurchaseOrder update(@PathVariable UUID id, @RequestBody PurchaseOrder order) {
-        order.setId(id);
-        return service.save(order);
+    // Consumes DTO, returns DTO
+    public ResponseEntity<PurchaseOrderResponse> update(@PathVariable UUID id, @RequestBody PurchaseOrderRequest request) {
+        // Service handles the update logic and returns the updated DTO
+        PurchaseOrderResponse response = service.update(id, request);
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable UUID id) { service.delete(id); }
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+        service.delete(id);
+        // Use 204 No Content status for successful deletion
+        return ResponseEntity.noContent().build();
+    }
 }

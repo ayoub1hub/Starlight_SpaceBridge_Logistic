@@ -2,7 +2,6 @@ package org.example.livraisonservice.dto;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
-
 import lombok.*;
 
 @Data

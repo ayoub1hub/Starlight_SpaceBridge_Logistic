@@ -4,7 +4,11 @@ services:
     environment:
       POSTGRES_DB: postgres
       POSTGRES_USER: postgres
+<<<<<<< HEAD
       POSTGRES_HOST_AUTH_METHOD: trust  # Désactive l'authentification !!!
+=======
+      POSTGRES_HOST_AUTH_METHOD: trust
+>>>>>>> origin/israe
     ports:
       - "5432:5432"
     volumes:
@@ -15,7 +19,11 @@ services:
     depends_on:
       - postgres
     environment:
+<<<<<<< HEAD
       PGPASSWORD: ""  # optionnel, mais cohérent
+=======
+      PGPASSWORD: ""
+>>>>>>> origin/israe
     command: |
       bash -c "
         sleep 10 &&

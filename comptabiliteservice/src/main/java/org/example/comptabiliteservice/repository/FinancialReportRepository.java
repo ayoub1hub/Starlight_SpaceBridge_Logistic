@@ -1,5 +1,6 @@
 package org.example.comptabiliteservice.repository;
-import com.example.sslproject.comptabiliteservice.entity.*;
+
+import org.example.comptabiliteservice.entity.FinancialReport;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.UUID;
 

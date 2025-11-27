@@ -1,7 +1,6 @@
 package org.example.comptabiliteservice.entity;
 
-import com.example.sslproject.comptabiliteservice.entity.InvoiceItem;
-import com.example.sslproject.comptabiliteservice.entity.Payment;
+
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;

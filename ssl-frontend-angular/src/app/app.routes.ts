@@ -3,6 +3,9 @@ import { PublicLayoutComponent } from './layouts/public-layout/public-layout.com
 import { AdminLayoutComponent } from './layouts/admin-layout/admin-layout.component';
 import { authGuard } from './core/guards/auth.guard';
 
+// @ts-ignore
+// @ts-ignore
+// @ts-ignore
 export const routes: Routes = [
   {
     path: '',

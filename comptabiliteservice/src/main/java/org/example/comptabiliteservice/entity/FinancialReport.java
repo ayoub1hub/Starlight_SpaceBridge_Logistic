@@ -26,4 +26,5 @@ public class FinancialReport {
     private String generatedBy;
 
     private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime updatedAt;
 }

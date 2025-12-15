@@ -8,7 +8,11 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "exchange_rates")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ExchangeRate {
 
     @Id
@@ -19,5 +23,9 @@ public class ExchangeRate {
     private String toCurrency;
     private Double rate;
     private LocalDate date;
+
     private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime updatedAt;
+
+
 }

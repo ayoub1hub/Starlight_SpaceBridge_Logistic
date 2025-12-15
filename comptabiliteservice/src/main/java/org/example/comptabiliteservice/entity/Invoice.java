@@ -27,7 +27,8 @@ public class Invoice {
     private Double totalAmount;
     private String currency;
     private String status;           // e.g. "Paid", "Pending", "Cancelled"
-    private String paymentMethod;    // e.g. "Bank Transfer", "Credit"
+    private String paymentMethod;
+    // e.g. "Bank Transfer", "Credit"
 
     @Column(columnDefinition = "TEXT")
     private String notes;

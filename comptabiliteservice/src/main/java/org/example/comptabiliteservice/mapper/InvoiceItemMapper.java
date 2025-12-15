@@ -1,16 +1,17 @@
-
-
 package org.example.comptabiliteservice.mapper;
 
 import org.example.comptabiliteservice.dto.InvoiceItemDto;
 import org.example.comptabiliteservice.entity.InvoiceItem;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.ReportingPolicy;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface InvoiceItemMapper {
+
     InvoiceItemDto toDto(InvoiceItem entity);
 
-    @Mapping(target = "invoice", ignore = true)
     InvoiceItem toEntity(InvoiceItemDto dto);
+
+    void updateEntityFromDto(InvoiceItemDto dto, @MappingTarget InvoiceItem entity);
 }

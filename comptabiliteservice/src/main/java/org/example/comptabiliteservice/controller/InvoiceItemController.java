@@ -1,7 +1,8 @@
 package org.example.comptabiliteservice.controller;
 
-import org.example.comptabiliteservice.dto.InvoiceItemDto; // CHANGED from entity.InvoiceItem
+import org.example.comptabiliteservice.dto.InvoiceItemDto;
 import org.example.comptabiliteservice.service.InvoiceItemService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,6 +11,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/invoice-items")
+@CrossOrigin(origins = "*")
 public class InvoiceItemController {
 
     private final InvoiceItemService service;
@@ -18,41 +20,35 @@ public class InvoiceItemController {
         this.service = service;
     }
 
-    @GetMapping
-    // CHANGED: Returns List<InvoiceItemDto>
-    public List<InvoiceItemDto> getAll() {
-        return service.getAll();
+    @PostMapping
+    public ResponseEntity<InvoiceItemDto> createInvoiceItem(@RequestBody InvoiceItemDto dto) {
+        InvoiceItemDto created = service.createInvoiceItem(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @GetMapping("/{id}")
-    // CHANGED: Returns ResponseEntity<InvoiceItemDto>
-    public ResponseEntity<InvoiceItemDto> getById(@PathVariable UUID id) {
-        // The service layer now returns the DTO directly or throws an exception
-        InvoiceItemDto dto = service.getById(id);
+    public ResponseEntity<InvoiceItemDto> getInvoiceItemById(@PathVariable UUID id) {
+        InvoiceItemDto dto = service.getInvoiceItemById(id);
         return ResponseEntity.ok(dto);
     }
 
-    @PostMapping
-    // CHANGED: Takes @RequestBody InvoiceItemDto
-    public ResponseEntity<InvoiceItemDto> create(@RequestBody InvoiceItemDto dto) {
-        InvoiceItemDto saved = service.save(dto);
-        return ResponseEntity.status(201).body(saved);
+    @GetMapping
+    public ResponseEntity<List<InvoiceItemDto>> getAllInvoiceItems() {
+        List<InvoiceItemDto> list = service.getAllInvoiceItems();
+        return ResponseEntity.ok(list);
     }
 
     @PutMapping("/{id}")
-    // CHANGED: Takes @RequestBody InvoiceItemDto and returns InvoiceItemDto
-    public ResponseEntity<InvoiceItemDto> update(
+    public ResponseEntity<InvoiceItemDto> updateInvoiceItem(
             @PathVariable UUID id,
             @RequestBody InvoiceItemDto dto) {
-
-        // Assuming update method in service handles not found exception/check
-        InvoiceItemDto updated = service.update(id, dto);
+        InvoiceItemDto updated = service.updateInvoiceItem(id, dto);
         return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        service.delete(id);
+    public ResponseEntity<Void> deleteInvoiceItem(@PathVariable UUID id) {
+        service.deleteInvoiceItem(id);
         return ResponseEntity.noContent().build();
     }
 }

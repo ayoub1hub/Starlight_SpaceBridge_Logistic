@@ -2,6 +2,7 @@ package org.example.comptabiliteservice.controller;
 
 import org.example.comptabiliteservice.dto.PaymentDto;
 import org.example.comptabiliteservice.service.PaymentService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,6 +11,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/payments")
+@CrossOrigin(origins = "*")
 public class PaymentController {
 
     private final PaymentService service;
@@ -18,34 +20,35 @@ public class PaymentController {
         this.service = service;
     }
 
-    @GetMapping
-    public List<PaymentDto> getAll() {
-        return service.getAll();
+    @PostMapping
+    public ResponseEntity<PaymentDto> createPayment(@RequestBody PaymentDto dto) {
+        PaymentDto created = service.createPayment(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PaymentDto> getById(@PathVariable UUID id) {
-        PaymentDto payment = service.getById(id);
-        return ResponseEntity.ok(payment);
+    public ResponseEntity<PaymentDto> getPaymentById(@PathVariable UUID id) {
+        PaymentDto dto = service.getPaymentById(id);
+        return ResponseEntity.ok(dto);
     }
 
-    @PostMapping
-    public ResponseEntity<PaymentDto> create(@RequestBody PaymentDto dto) {
-        PaymentDto saved = service.save(dto);
-        return ResponseEntity.status(201).body(saved);
+    @GetMapping
+    public ResponseEntity<List<PaymentDto>> getAllPayments() {
+        List<PaymentDto> list = service.getAllPayments();
+        return ResponseEntity.ok(list);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PaymentDto> update(
+    public ResponseEntity<PaymentDto> updatePayment(
             @PathVariable UUID id,
             @RequestBody PaymentDto dto) {
-        PaymentDto updated = service.update(id, dto);
+        PaymentDto updated = service.updatePayment(id, dto);
         return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        service.delete(id);
+    public ResponseEntity<Void> deletePayment(@PathVariable UUID id) {
+        service.deletePayment(id);
         return ResponseEntity.noContent().build();
     }
 }

@@ -2,6 +2,7 @@ package org.example.comptabiliteservice.controller;
 
 import org.example.comptabiliteservice.dto.ExchangeRateDto;
 import org.example.comptabiliteservice.service.ExchangeRateService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,6 +11,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/exchange-rates")
+@CrossOrigin(origins = "*")
 public class ExchangeRateController {
 
     private final ExchangeRateService service;
@@ -18,34 +20,35 @@ public class ExchangeRateController {
         this.service = service;
     }
 
-    @GetMapping
-    public List<ExchangeRateDto> getAll() {
-        return service.getAll();
+    @PostMapping
+    public ResponseEntity<ExchangeRateDto> createExchangeRate(@RequestBody ExchangeRateDto dto) {
+        ExchangeRateDto created = service.createExchangeRate(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ExchangeRateDto> getById(@PathVariable UUID id) {
-        ExchangeRateDto exchangeRate = service.getById(id);
-        return ResponseEntity.ok(exchangeRate);
+    public ResponseEntity<ExchangeRateDto> getExchangeRateById(@PathVariable UUID id) {
+        ExchangeRateDto dto = service.getExchangeRateById(id);
+        return ResponseEntity.ok(dto);
     }
 
-    @PostMapping
-    public ResponseEntity<ExchangeRateDto> create(@RequestBody ExchangeRateDto dto) {
-        ExchangeRateDto saved = service.save(dto);
-        return ResponseEntity.status(201).body(saved);
+    @GetMapping
+    public ResponseEntity<List<ExchangeRateDto>> getAllExchangeRates() {
+        List<ExchangeRateDto> list = service.getAllExchangeRates();
+        return ResponseEntity.ok(list);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ExchangeRateDto> update(
+    public ResponseEntity<ExchangeRateDto> updateExchangeRate(
             @PathVariable UUID id,
             @RequestBody ExchangeRateDto dto) {
-        ExchangeRateDto updated = service.update(id, dto);
+        ExchangeRateDto updated = service.updateExchangeRate(id, dto);
         return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        service.delete(id);
+    public ResponseEntity<Void> deleteExchangeRate(@PathVariable UUID id) {
+        service.deleteExchangeRate(id);
         return ResponseEntity.noContent().build();
     }
 }

@@ -26,4 +26,5 @@ public class InvoiceItem {
     private Double discountRate;
 
     private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime updatedAt;
 }

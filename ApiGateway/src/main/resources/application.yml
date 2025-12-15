@@ -7,20 +7,30 @@ spring:
 
   cloud:
     gateway:
+      # =============================
+      # GLOBAL CORS CONFIG (Correct)
+      # =============================
       globalcors:
         cors-configurations:
           '[/**]':
-            allowed-origins: "*"
-            allowed-methods:
+            allowedOrigins:
+              - "http://localhost:4200"
+            allowedMethods:
               - GET
               - POST
               - PUT
               - DELETE
+              - PATCH
               - OPTIONS
-            allowed-headers: "*"
-            allow-credentials: true
+            allowedHeaders: "*"
+            allowCredentials: true
+            maxAge: 3600
 
+      # =============================
+      # GATEWAY ROUTES (Corrected)
+      # =============================
       routes:
+
         - id: commande-service
           uri: lb://COMMANDE-SERVICE
           predicates:
@@ -49,12 +59,22 @@ spring:
           filters:
             - StripPrefix=0
 
+
+        - id: auth-service
+          uri: lb://AUTH-SERVICE
+          predicates:
+            - Path=/auth-service/**
+          filters:
+
+            - StripPrefix=1
+
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
     fetch-registry: true
-    register-with-eureka: true
+    register-with-eureka: false
+
   instance:
     prefer-ip-address: true
 

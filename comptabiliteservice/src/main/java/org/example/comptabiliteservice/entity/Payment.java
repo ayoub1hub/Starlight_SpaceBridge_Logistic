@@ -29,4 +29,5 @@ public class Payment {
 
     private String receivedBy;
     private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime updatedAt;
 }

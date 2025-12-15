@@ -1,6 +1,6 @@
 package org.example.commandeservice.controller;
 
-import org.example.commandeservice.entity.CustomsDeclaration;
+import org.example.commandeservice.dto.CustomsDeclarationDto; // Use DTO
 import org.example.commandeservice.service.CustomsDeclarationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,39 +19,34 @@ public class CustomsDeclarationController {
     }
 
     @GetMapping
-    public List<CustomsDeclaration> getAll() {
+    public List<CustomsDeclarationDto> getAll() { // Returns DTO List
         return service.getAll();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CustomsDeclaration> getById(@PathVariable UUID id) {
-        return service.getById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<CustomsDeclarationDto> getById(@PathVariable UUID id) {
+        // Service methods now throw exceptions for 'Not Found', so we can simplify the handler
+        CustomsDeclarationDto declaration = service.getById(id);
+        return ResponseEntity.ok(declaration);
     }
 
     @PostMapping
-    public ResponseEntity<CustomsDeclaration> create(@RequestBody CustomsDeclaration declaration) {
-        CustomsDeclaration saved = service.save(declaration);
+    public ResponseEntity<CustomsDeclarationDto> create(@RequestBody CustomsDeclarationDto declarationDto) { // Accepts DTO
+        CustomsDeclarationDto saved = service.save(declarationDto);
         return ResponseEntity.status(201).body(saved);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CustomsDeclaration> update(
+    public ResponseEntity<CustomsDeclarationDto> update(
             @PathVariable UUID id,
-            @RequestBody CustomsDeclaration declaration) {
-        if (!service.exists(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        CustomsDeclaration updated = service.update(id, declaration);
+            @RequestBody CustomsDeclarationDto declarationDto) { // Accepts DTO
+
+        CustomsDeclarationDto updated = service.update(id, declarationDto);
         return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        if (!service.exists(id)) {
-            return ResponseEntity.notFound().build();
-        }
         service.delete(id);
         return ResponseEntity.noContent().build();
     }

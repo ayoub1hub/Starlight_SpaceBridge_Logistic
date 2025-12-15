@@ -1,6 +1,6 @@
 package org.example.commandeservice.controller;
 
-import org.example.commandeservice.entity.PurchaseOrderItem;
+import org.example.commandeservice.dto.PurchaseOrderItemDto; // Use DTO
 import org.example.commandeservice.service.PurchaseOrderItemService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,39 +19,33 @@ public class PurchaseOrderItemController {
     }
 
     @GetMapping
-    public List<PurchaseOrderItem> getAll() {
+    public List<PurchaseOrderItemDto> getAll() { // Returns DTO List
         return service.getAll();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PurchaseOrderItem> getById(@PathVariable UUID id) {
-        return service.getById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<PurchaseOrderItemDto> getById(@PathVariable UUID id) {
+        PurchaseOrderItemDto item = service.getById(id);
+        return ResponseEntity.ok(item);
     }
 
     @PostMapping
-    public ResponseEntity<PurchaseOrderItem> create(@RequestBody PurchaseOrderItem item) {
-        PurchaseOrderItem saved = service.save(item);
+    public ResponseEntity<PurchaseOrderItemDto> create(@RequestBody PurchaseOrderItemDto itemDto) { // Accepts DTO
+        PurchaseOrderItemDto saved = service.save(itemDto);
         return ResponseEntity.status(201).body(saved);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PurchaseOrderItem> update(
+    public ResponseEntity<PurchaseOrderItemDto> update(
             @PathVariable UUID id,
-            @RequestBody PurchaseOrderItem item) {
-        if (!service.exists(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        PurchaseOrderItem updated = service.update(id, item);
+            @RequestBody PurchaseOrderItemDto itemDto) { // Accepts DTO
+
+        PurchaseOrderItemDto updated = service.update(id, itemDto);
         return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        if (!service.exists(id)) {
-            return ResponseEntity.notFound().build();
-        }
         service.delete(id);
         return ResponseEntity.noContent().build();
     }

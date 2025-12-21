@@ -1,0 +1,101 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origin-patterns: "*"
+            allowed-methods: [GET, POST, PUT, DELETE, OPTIONS]
+            allowed-headers: "*"
+            allow-credentials: true
+
+      routes:
+        # ==================== COMMANDE SERVICE ====================
+        - id: commande-service
+          uri: lb://commande-service
+          predicates:
+            - Path=/api/purchase-orders/**,/api/suppliers/**,/api/purchase-order-items/** #all routes verified
+          filters:
+            - StripPrefix=0
+
+        # ==================== STOCK SERVICE ====================
+        - id: stock-service
+          uri: lb://stock-service
+          predicates:
+            - Path=/api/stocks/**,/api/products/**,/api/warehouses/**,/api/persons/** #all routes verified
+          filters:
+            - StripPrefix=0
+
+        # ==================== LIVRAISON SERVICE ====================
+        - id: livraison-service
+          uri: lb://livraison-service
+          predicates:
+            - Path=/api/deliveries/**,/api/tracking/**,/api/drivers/**
+          filters:
+            - StripPrefix=0
+
+        # ==================== COMPTABILITÉ ====================
+        - id: comptabilite-service
+          uri: lb://comptabilite-service
+          predicates:
+            - Path=/api/invoices/**
+          filters:
+            - StripPrefix=0
+
+        # ==================== VENTE SERVICE ====================
+        - id: vente-service
+          uri: lb://vente-service
+          predicates:
+            - Path=/api/sales-orders/**,/api/sales-orders
+          filters:
+            - StripPrefix=0
+
+        # ==================== ROUTES DE TEST (liv->stock) & (liv->cmd) ====================
+        #- id: test-livraison
+         # uri: lb://livraison-service
+          #predicates:
+           # - Path=/test/**
+          #filters:
+           # - StripPrefix=0
+
+        # ==================== ROUTES DE TEST (cmd->stock) ====================
+        #- id: test-commande
+         # uri: lb://COMMANDE-SERVICE
+          #predicates:
+           # - Path=/test/**
+          #filters:
+           # - StripPrefix=0
+
+        # ==================== ROUTES DE TEST (compta->cmd) ====================
+        - id: test-comptabilite
+          uri: lb://comptabilite-service
+          predicates:
+            - Path=/api/invoices/**,/test/**
+          filters:
+            - StripPrefix=0
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: false
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+
+logging:
+  level:
+    org.springframework.cloud.gateway: TRACE
+    reactor.netty: INFO
+    org.example.apigateway: DEBUG

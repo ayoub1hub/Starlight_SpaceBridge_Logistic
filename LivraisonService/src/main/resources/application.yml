@@ -1,0 +1,61 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: livraison-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/livraison_db
+    username: postgres
+    password: "postgres"
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+commandeservice:
+  url: http://localhost:8081
+
+comptabiliteservice:
+  url: http://localhost:8082
+
+stockservice:
+  url: http://localhost:8084
+
+venteeservice:
+  url: http://localhost:8085
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${spring.cloud.client.ip-address:-localhost}:${server.port}
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+    metadata-map:
+      zone: primary
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+logging:
+  level:
+    root: INFO
+    org.example.livraisonservice: DEBUG
+    org.springframework.cloud: INFO
+    org.springframework.web: INFO

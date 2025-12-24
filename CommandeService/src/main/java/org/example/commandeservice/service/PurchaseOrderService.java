@@ -1,7 +1,12 @@
 package org.example.commandeservice.service;
 
+import org.example.commandeservice.client.StockClient;
 import org.example.commandeservice.dto.PurchaseOrderRequest;
 import org.example.commandeservice.dto.PurchaseOrderResponse;
+import org.example.commandeservice.dto.ReceiveOrderItem;
+import org.example.commandeservice.dto.ReceiveOrderRequest;
+import org.example.commandeservice.dto.external.StockUpdateItem;
+import org.example.commandeservice.dto.external.StockUpdateRequest;
 import org.example.commandeservice.entity.PurchaseOrder;
 import org.example.commandeservice.entity.PurchaseOrderItem;
 import org.example.commandeservice.entity.Supplier;
@@ -23,11 +28,13 @@ public class PurchaseOrderService {
     private final SupplierRepository supplierRepository;
     private final PurchaseOrderRepository repository;
     private final PurchaseOrderMapper mapper;
+    private final StockClient stockClient;
 
-    public PurchaseOrderService(SupplierRepository supplierRepository, PurchaseOrderRepository repository, PurchaseOrderMapper mapper) {
+    public PurchaseOrderService(SupplierRepository supplierRepository, PurchaseOrderRepository repository, PurchaseOrderMapper purchaseOrderMapper, StockClient stockClient) {
         this.supplierRepository = supplierRepository;
         this.repository = repository;
-        this.mapper = mapper;
+        this.mapper = purchaseOrderMapper;
+        this.stockClient = stockClient;
     }
 
     public List<PurchaseOrderResponse> getAll() {
@@ -99,6 +106,77 @@ public class PurchaseOrderService {
 
         // Convert to DTO and return
         return mapper.toDto(updatedEntity);
+    }
+
+    @Transactional
+    public PurchaseOrderResponse receiveOrder(UUID orderId, ReceiveOrderRequest request) {
+        // Chargement de la commande avec ses items
+        PurchaseOrder order = repository.findByIdWithItems(orderId)
+                .orElseThrow(() -> new RuntimeException("Commande d'achat non trouvée : " + orderId));
+
+        // Vérification du statut
+        if (!"APPROVED".equals(order.getStatus())) {
+            throw new RuntimeException("Seule une commande APPROVED peut être reçue. Statut actuel : " + order.getStatus());
+        }
+
+        // Compteurs pour déterminer le statut final
+        int totalItems = order.getItems().size();
+        int fullyReceivedItems = 0;
+
+        // Traitement de chaque item reçu
+        for (ReceiveOrderItem receiveItem : request.getItems()) {
+            PurchaseOrderItem item = order.getItems().stream()
+                    .filter(i -> i.getId().equals(receiveItem.getItemId()))
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("Item non trouvé dans la commande : " + receiveItem.getItemId()));
+
+            // Mise à jour de la quantité reçue
+            Integer currentReceived = item.getReceivedQuantity() != null ? item.getReceivedQuantity() : 0;
+            int newReceived = currentReceived + receiveItem.getReceivedQuantity();
+            item.setReceivedQuantity(newReceived);
+
+            // Vérification si l'item est complètement reçu
+            if (newReceived >= item.getQuantity()) {
+                fullyReceivedItems++;
+            }
+        }
+
+        // Mise à jour du statut de la commande
+        if (fullyReceivedItems == totalItems) {
+            order.setStatus("RECEIVED");
+        } else {
+            order.setStatus("PARTIALLY_RECEIVED");
+        }
+
+        // Appel à stockservice pour ajouter les quantités reçues au stock
+        StockUpdateRequest stockRequest = buildStockUpdateRequest(order, request);
+        stockClient.updateStockOnReceive(stockRequest);
+
+        // Sauvegarde et retour
+        PurchaseOrder saved = repository.save(order);
+        return mapper.toDto(saved);
+    }
+
+    // Méthode privée pour construire la requête vers stockservice
+    private StockUpdateRequest buildStockUpdateRequest(PurchaseOrder order, ReceiveOrderRequest request) {
+        List<StockUpdateItem> stockItems = request.getItems().stream()
+                .map(receiveItem -> {
+                    PurchaseOrderItem orderItem = order.getItems().stream()
+                            .filter(i -> i.getId().equals(receiveItem.getItemId()))
+                            .findFirst()
+                            .orElseThrow();
+
+                    return StockUpdateItem.builder()
+                            .productId(orderItem.getProductId())
+                            .quantity(receiveItem.getReceivedQuantity())
+                            .build();
+                })
+                .toList();
+
+        return StockUpdateRequest.builder()
+                .warehouseId(order.getWarehouseId())
+                .items(stockItems)
+                .build();
     }
 
     public void delete(UUID id) {

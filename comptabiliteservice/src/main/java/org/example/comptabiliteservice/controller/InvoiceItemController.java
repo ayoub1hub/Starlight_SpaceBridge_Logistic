@@ -26,7 +26,7 @@ public class InvoiceItemController {
 
     @GetMapping("/{id}")
     // CHANGED: Returns ResponseEntity<InvoiceItemDto>
-    public ResponseEntity<InvoiceItemDto> getById(@PathVariable UUID id) {
+    public ResponseEntity<InvoiceItemDto> getById(@PathVariable("id") UUID id) {
         // The service layer now returns the DTO directly or throws an exception
         InvoiceItemDto dto = service.getById(id);
         return ResponseEntity.ok(dto);
@@ -42,7 +42,7 @@ public class InvoiceItemController {
     @PutMapping("/{id}")
     // CHANGED: Takes @RequestBody InvoiceItemDto and returns InvoiceItemDto
     public ResponseEntity<InvoiceItemDto> update(
-            @PathVariable UUID id,
+            @PathVariable("id") UUID id,
             @RequestBody InvoiceItemDto dto) {
 
         // Assuming update method in service handles not found exception/check
@@ -51,7 +51,7 @@ public class InvoiceItemController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+    public ResponseEntity<Void> delete(@PathVariable("id") UUID id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }

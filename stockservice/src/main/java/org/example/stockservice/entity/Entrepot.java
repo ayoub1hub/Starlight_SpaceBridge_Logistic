@@ -1,13 +1,16 @@
 package org.example.stockservice.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import lombok.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 @Entity
-@Table(name = "entrepot")
+@Table(name = "entrepot", uniqueConstraints = {
+        @UniqueConstraint(columnNames = "code")
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,6 +20,10 @@ public class Entrepot {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
+    @Column(nullable = false, unique = true, length = 50)
+    private String code;
+    @Column(nullable = false)
+    private String password;
     @NotBlank
     private String name;
     private String address;
@@ -54,5 +61,10 @@ public class Entrepot {
     public void removeStock(Stock stock) {
         stocks.remove(stock);
         stock.setEntrepot(null);
+    }
+    public void encodePassword(PasswordEncoder passwordEncoder) {
+        if (this.password != null && !this.password.isEmpty()) {
+            this.password = passwordEncoder.encode(this.password);
+        }
     }
 }

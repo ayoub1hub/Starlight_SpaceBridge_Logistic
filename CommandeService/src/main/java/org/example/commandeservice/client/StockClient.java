@@ -1,17 +1,13 @@
 package org.example.commandeservice.client;
 
-
+import org.example.commandeservice.dto.external.StockUpdateRequest;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.*;
-import org.example.stockservice.dto.StockDto;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.List;
-import java.util.UUID;
-
-@FeignClient(name = "stock-service")
+@FeignClient(name = "stock-service-from-commande", url = "${stockservice.url}")
 public interface StockClient {
 
-    @GetMapping("/api/stocks/warehouses/{entrepotId}")
-    List<StockDto> getStockByEntrepot(@PathVariable("entrepotId") UUID entrepotId);
+    @PostMapping("/api/stocks/receive")
+    void updateStockOnReceive(@RequestBody StockUpdateRequest request);
 }
-

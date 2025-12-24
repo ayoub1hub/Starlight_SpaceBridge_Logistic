@@ -1,5 +1,6 @@
 package org.example.stockservice.service;
 import org.example.stockservice.dto.*;
+import org.example.stockservice.dto.external.StockUpdateItem;
 import org.example.stockservice.entity.*;
 import org.example.stockservice.mapper.StockMapper;
 import org.example.stockservice.repository.*;
@@ -117,6 +118,21 @@ public class StockService {
 
             stock.setQuantityAvailable(stock.getQuantityAvailable() - item.getQuantity());
             stock.setQuantityReserved(stock.getQuantityReserved() + item.getQuantity());
+            stockRepository.save(stock);
+        }
+    }
+
+    public void addStockOnReceive(UUID warehouseId, List<StockUpdateItem> items) {
+        for (StockUpdateItem item : items) {
+            Stock stock = stockRepository.findByEntrepotIdAndProduitId(warehouseId, item.getProductId())
+                    .orElseGet(() -> Stock.builder()
+                            .entrepot(entrepotRepository.getReferenceById(warehouseId))
+                            .produit(produitRepository.getReferenceById(item.getProductId()))
+                            .quantityAvailable(0)
+                            .quantityReserved(0)
+                            .build());
+
+            stock.setQuantityAvailable(stock.getQuantityAvailable() + item.getQuantity());
             stockRepository.save(stock);
         }
     }

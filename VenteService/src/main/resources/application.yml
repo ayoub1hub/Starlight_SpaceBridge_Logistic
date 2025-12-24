@@ -20,6 +20,18 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
 
+commandeservice:
+  url: http://localhost:8081
+
+comptabiliteservice:
+  url: http://localhost:8082
+
+livraisonservice:
+  url: http://localhost:8083
+
+stockservice:
+  url: http://localhost:8084
+
 eureka:
   client:
     service-url:

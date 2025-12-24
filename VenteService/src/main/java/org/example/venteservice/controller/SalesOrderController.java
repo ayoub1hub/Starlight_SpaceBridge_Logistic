@@ -17,36 +17,36 @@ import java.util.UUID;
 @CrossOrigin(origins = "*")
 public class SalesOrderController {
 
-    private final SalesOrderService service;
+    private final SalesOrderService salesOrderService;
 
     @GetMapping
     public ResponseEntity<List<SalesOrderResponse>> getAll() {
-        return ResponseEntity.ok(service.getAll());
+        return ResponseEntity.ok(salesOrderService.getAll());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<SalesOrderResponse> getById(@PathVariable("id") UUID id) {
-        return ResponseEntity.ok(service.getById(id));
+        return ResponseEntity.ok(salesOrderService.getById(id));
     }
 
     @PostMapping
     public ResponseEntity<SalesOrderResponse> create(@Valid @RequestBody SalesOrderRequest request) {
-        return ResponseEntity.status(201).body(service.create(request));
+        return ResponseEntity.status(201).body(salesOrderService.create(request));
     }
 
     @PutMapping("/{id}/confirm")
     public ResponseEntity<SalesOrderResponse> confirm(@PathVariable("id") UUID id) {
-        return ResponseEntity.ok(service.confirm(id));
+        return ResponseEntity.ok(salesOrderService.confirm(id));
     }
 
     @PutMapping("/{id}/complete")
     public ResponseEntity<SalesOrderResponse> complete(@PathVariable("id") UUID id) {
-        return ResponseEntity.ok(service.complete(id));
+        return ResponseEntity.ok(salesOrderService.complete(id));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable("id") UUID id) {
-        service.delete(id);
+        salesOrderService.delete(id);
         return ResponseEntity.noContent().build();
     }
 }

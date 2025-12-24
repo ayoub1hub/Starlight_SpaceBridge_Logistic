@@ -2,8 +2,10 @@
 
 package org.example.commandeservice.controller;
 
+import jakarta.validation.Valid;
 import org.example.commandeservice.dto.PurchaseOrderRequest;
 import org.example.commandeservice.dto.PurchaseOrderResponse;
+import org.example.commandeservice.dto.ReceiveOrderRequest;
 import org.example.commandeservice.service.PurchaseOrderService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -48,10 +50,17 @@ public class PurchaseOrderController {
         return ResponseEntity.ok(response);
     }
 
+    @PutMapping("/{id}/receive")
+    public ResponseEntity<PurchaseOrderResponse> receiveOrder(
+            @PathVariable UUID id,
+            @Valid @RequestBody ReceiveOrderRequest request) {
+        PurchaseOrderResponse response = service.receiveOrder(id, request);
+        return ResponseEntity.ok(response);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable("id") UUID id) {
         service.delete(id);
-        // Use 204 No Content status for successful deletion
         return ResponseEntity.noContent().build();
     }
 }

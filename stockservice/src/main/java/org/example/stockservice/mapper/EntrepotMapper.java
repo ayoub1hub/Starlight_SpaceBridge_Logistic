@@ -6,6 +6,7 @@ import org.example.stockservice.entity.Entrepot;
 import org.example.stockservice.entity.Stock;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
@@ -23,4 +24,13 @@ public interface EntrepotMapper {
     // On délègue directement à StockMapper
     @Mapping(target = "stocks", ignore = true)
     Entrepot toEntity(EntrepotDto dto);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "stocks", ignore = true)
+    @Mapping(target = "responsable", ignore = true)
+    @Mapping(target = "admin", ignore = true)
+    @Mapping(target = "password", ignore = true)  // Important : on gère le password manuellement
+    void updateEntity(EntrepotDto dto, @MappingTarget Entrepot entity);
 }

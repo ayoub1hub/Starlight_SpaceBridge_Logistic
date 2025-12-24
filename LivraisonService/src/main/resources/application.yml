@@ -29,7 +29,7 @@ comptabiliteservice:
 stockservice:
   url: http://localhost:8084
 
-venteeservice:
+venteservice:
   url: http://localhost:8085
 
 eureka:

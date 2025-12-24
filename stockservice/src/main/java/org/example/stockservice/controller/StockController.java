@@ -1,5 +1,6 @@
 package org.example.stockservice.controller;
 import jakarta.validation.Valid;
+import org.example.stockservice.dto.external.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.example.stockservice.dto.*;
@@ -43,6 +44,13 @@ public class StockController {
             @Valid @RequestBody StockDto dto) {
         return ResponseEntity.ok(stockService.updateStock(id, dto));
     }
+
+    @PostMapping("/receive")
+    public ResponseEntity<Void> receiveStock(@RequestBody StockUpdateRequest request) {
+        stockService.addStockOnReceive(request.getWarehouseId(), request.getItems());
+        return ResponseEntity.ok().build();
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteStock(@PathVariable("id") UUID id) {
         stockService.deleteStock(id);

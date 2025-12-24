@@ -8,11 +8,12 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class PurchaseOrderItemDto {
     private UUID id;
     private UUID purchaseOrderId;
     private Integer quantity;
-    private Long productId;
+    private UUID productId;
     private BigDecimal unitPrice; // BigDecimal for money!
     private BigDecimal totalPrice;
     private BigDecimal taxAmount;

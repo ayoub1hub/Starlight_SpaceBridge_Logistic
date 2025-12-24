@@ -1,6 +1,8 @@
 package org.example.venteservice.service;
 
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+import org.example.venteservice.client.ComptabiliteClient;
 import org.example.venteservice.client.LivraisonClient;
 import org.example.venteservice.client.StockClient;
 import org.example.venteservice.dto.*;
@@ -8,8 +10,11 @@ import org.example.venteservice.dto.external.*;
 import org.example.venteservice.entity.SalesOrder;
 import org.example.venteservice.mapper.SalesOrderMapper;
 import org.example.venteservice.repository.SalesOrderRepository;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -25,6 +30,9 @@ public class SalesOrderService {
     private final SalesOrderMapper salesOrderMapper;
     private final StockClient stockClient;
     private final LivraisonClient livraisonClient;
+    private final ComptabiliteClient comptaClient;
+
+    private static final Logger log = LoggerFactory.getLogger(SalesOrderService.class);
 
     public List<SalesOrderResponse> getAll() {
         return repository.findAll().stream()
@@ -45,12 +53,12 @@ public class SalesOrderService {
 
         SalesOrder saved = repository.save(order);
 
-        // Réservation du stock
         reserveStock(saved);
 
         return salesOrderMapper.toDto(saved);
     }
 
+    @Transactional // tout réussit ou tout est rollback
     public SalesOrderResponse confirm(UUID id) {
         SalesOrder order = getOrderById(id);
 
@@ -61,7 +69,7 @@ public class SalesOrderService {
         order.setStatus("CONFIRMED");
         order.setUpdatedAt(LocalDateTime.now());
 
-        // Création de la livraison avec DTO externe
+        // creation de la livraison
         DeliveryRequest deliveryRequest = DeliveryRequest.builder()
                 .orderReference(order.getOrderNumber())
                 .warehouseId(order.getWarehouseId())
@@ -80,8 +88,25 @@ public class SalesOrderService {
         DeliveryResponse createdDelivery = livraisonClient.createDelivery(deliveryRequest);
         order.setDeliveryId(createdDelivery.getId());
 
-        repository.save(order);
-        return salesOrderMapper.toDto(order);
+        // creation de la facture dans comptabilite service
+        try {
+            ResponseEntity<?> invoiceResponse = comptaClient.createInvoiceFromSale(order.getId());
+
+            if (!invoiceResponse.getStatusCode().is2xxSuccessful()) {
+                log.warn("Facture créée mais réponse non-2xx pour la vente {} : {}", order.getId(), invoiceResponse.getStatusCode());
+            } else {
+                log.info("Facture créée avec succès pour la vente {}", order.getId());
+            }
+        } catch (FeignException e) {
+            log.error("Échec de création de la facture pour la vente {} : {}. " +
+                            "La facture devra être créée manuellement ou via retry plus tard.",
+                    order.getId(), e.getMessage());
+        }
+
+        // Sauvegarde finale de la commande (avec deliveryId mis à jour)
+        SalesOrder savedOrder = repository.save(order);
+
+        return salesOrderMapper.toDto(savedOrder);
     }
 
     public SalesOrderResponse complete(UUID id) {

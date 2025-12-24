@@ -7,6 +7,8 @@ import java.util.UUID;
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class EntrepotDto {
     private UUID id;
+    private String code;
+    private String password;
     private String name;
     private String location;
     private String address;
@@ -18,7 +20,4 @@ public class EntrepotDto {
     private List<StockSummaryDto> stocks = new ArrayList<>();
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
-
-
 }

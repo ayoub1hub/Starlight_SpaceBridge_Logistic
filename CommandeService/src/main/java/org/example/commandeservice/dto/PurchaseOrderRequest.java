@@ -1,5 +1,6 @@
 package org.example.commandeservice.dto;
 
+import jakarta.validation.Valid;
 import lombok.*;
 import jakarta.validation.constraints.*;
 
@@ -7,7 +8,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class PurchaseOrderRequest {
 
     @NotBlank(message = "Order number is required")
@@ -21,5 +22,6 @@ public class PurchaseOrderRequest {
     private LocalDate expectedDeliveryDate;
 
     @NotEmpty(message = "At least one item is required")
-    private List<@NotNull PurchaseOrderItemDto> items;
+    @Valid
+    private List<PurchaseOrderItemRequest> items;
 }

@@ -8,7 +8,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/commande_db
     username: postgres
-    password: "postgres"
+    password: postgres
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -20,6 +20,7 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
 
+
 comptabiliteservice:
   url: http://localhost:8082
 
@@ -29,7 +30,7 @@ livraisonservice:
 stockservice:
   url: http://localhost:8084
 
-venteeservice:
+venteservice:
   url: http://localhost:8085
 
 eureka:

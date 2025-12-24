@@ -3,7 +3,7 @@ package org.example.livraisonservice.dto.external;
 import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.UUID;
+import java.util.*;
 
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class StockDto {

@@ -1,0 +1,47 @@
+<div class="test-section">
+  <h2>Gestion des Ventes</h2>
+
+  <button mat-raised-button color="primary" (click)="chargerVentes()" [disabled]="loading">
+    Charger les Commandes
+  </button>
+
+  <mat-spinner *ngIf="loading" diameter="50"></mat-spinner>
+  <div *ngIf="error" class="error"><mat-icon>error</mat-icon> {{ error }}</div>
+
+  <mat-card *ngIf="ventes.length > 0" class="result-card">
+    <mat-card-header>
+      <mat-card-title>Commandes Clients ({{ ventes.length }})</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <table mat-table [dataSource]="ventes">
+        <ng-container matColumnDef="orderNumber">
+          <th mat-header-cell *matHeaderCellDef>N° Commande</th>
+          <td mat-cell *matCellDef="let v">{{ v.orderNumber }}</td>
+        </ng-container>
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Statut</th>
+          <td mat-cell *matCellDef="let v">
+            <mat-chip [color]="getStatusColor(v.status)" selected>
+              {{ v.status }}
+            </mat-chip>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="total">
+          <th mat-header-cell *matHeaderCellDef>Total</th>
+          <td mat-cell *matCellDef="let v">{{ v.totalAmount | currency:'EUR' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="items">
+          <th mat-header-cell *matHeaderCellDef>Articles</th>
+          <td mat-cell *matCellDef="let v">{{ v.items?.length || 0 }}</td>
+        </ng-container>
+        <ng-container matColumnDef="expectedDate">
+          <th mat-header-cell *matHeaderCellDef>Livraison prévue</th>
+          <td mat-cell *matCellDef="let v">{{ v.expectedDeliveryDate | date:'shortDate' }}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </mat-card-content>
+  </mat-card>
+</div>

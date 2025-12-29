@@ -10,9 +10,7 @@ import java.util.Optional;
 @Repository
 public interface DriverRepository extends JpaRepository<Driver, UUID> {
 
-    // Méthode utile pour vérifier l'unicité du personId
     boolean existsByPersonId(UUID personId);
-
     Optional<Driver> findByPersonId(UUID personId);
     Optional<Driver> findFirstByAvailableTrueAndStatus(String status);
 }

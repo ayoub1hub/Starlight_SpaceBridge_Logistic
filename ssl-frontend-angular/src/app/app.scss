@@ -1,0 +1,26 @@
+.landing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  color: white;
+  text-align: center;
+  padding: 20px;
+}
+
+h1 {
+  font-size: 4.5rem;
+  margin-bottom: 20px;
+}
+
+p {
+  font-size: 1.8rem;
+  margin-bottom: 60px;
+}
+
+.big-button {
+  padding: 20px 50px;
+  font-size: 1.6rem;
+}

@@ -76,4 +76,11 @@ public class EntrepotService {
         }
         entrepotRepository.deleteById(id);
     }
+
+    public Entrepot authenticateByCodeAndPassword(String code, String plainPassword) {
+        return entrepotRepository.findByCode(code)
+                .filter(entrepot -> passwordEncoder.matches(plainPassword, entrepot.getPassword()))
+                .orElse(null);
+    }
+
 }

@@ -41,7 +41,7 @@ spring:
         - id: livraison-service
           uri: lb://livraison-service
           predicates:
-            - Path=/api/deliveries/**,/api/tracking/**,/api/drivers/**
+            - Path=/api/deliveries/**,/api/tracking/**,/api/drivers/**,/api/incidents/**
           filters:
             - StripPrefix=0
 
@@ -61,29 +61,11 @@ spring:
           filters:
             - StripPrefix=0
 
-        # ==================== ROUTES DE TEST (liv->stock) & (liv->cmd) ====================
-        #- id: test-livraison
-         # uri: lb://livraison-service
-          #predicates:
-           # - Path=/test/**
-          #filters:
-           # - StripPrefix=0
-
-        # ==================== ROUTES DE TEST (cmd->stock) ====================
-        #- id: test-commande
-         # uri: lb://COMMANDE-SERVICE
-          #predicates:
-           # - Path=/test/**
-          #filters:
-           # - StripPrefix=0
-
-        # ==================== ROUTES DE TEST (compta->cmd) ====================
-        - id: test-comptabilite
-          uri: lb://comptabilite-service
-          predicates:
-            - Path=/api/invoices/**,/test/**
-          filters:
-            - StripPrefix=0
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8079/realms/ssl-realm
 
 eureka:
   client:

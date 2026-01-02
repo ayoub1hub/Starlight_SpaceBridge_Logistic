@@ -1,0 +1,29 @@
+name: ssl_delivery_ops
+description: Mission-critical courier application
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.4.0 <5.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  go_router: ^14.3.0
+  intl: ^0.19.0
+  url_launcher: ^6.3.0
+  flutter_appauth: ^6.0.0
+  flutter_secure_storage: ^9.2.2
+  http: ^1.2.2
+  image_picker: ^1.1.2
+  flutter_animate: ^4.5.0
+  permission_handler: ^11.3.1
+
+dev_dependencies:
+  flutter_animate: ^4.5.0
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true

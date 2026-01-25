@@ -43,6 +43,17 @@ public class DeliveryService {
         this.webClient = webClientBuilder.build();
     }
 
+    public List<DeliveryDto> getDeliveriesForDriver(String personId) {
+        // getSubject retoune un uuid de type string ; il faut le convertir
+        UUID personUuid = UUID.fromString(personId);
+        Driver driver = driverRepository.findByPersonId(personUuid)
+                .orElseThrow(() -> new RuntimeException("Driver not found for person: " + personId));
+        return deliveryRepository.findByDriverId(driver.getId())
+                .stream()
+                .map(deliveryMapper::toDto)
+                .toList();
+    }
+
     public DeliveryDto createDelivery(DeliveryDto dto) {
         // 1. Assignation automatique d'un driver disponible si non fourni
         UUID driverId;

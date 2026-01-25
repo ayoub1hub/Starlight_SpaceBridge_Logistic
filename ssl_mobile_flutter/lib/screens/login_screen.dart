@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../widgets/starfield_background.dart';
 import '../widgets/orbital_glass_card.dart';
+import 'dart:math';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -27,7 +28,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final password = _passwordController.text;
 
     print('Username: $username');
-    print('Password length: ${password.length}'); // ne logge pas le password pour sécurité
+    print('Password : ${password}');
 
     if (username.isEmpty || password.isEmpty) {
       print('ERREUR: Champs vides');
@@ -54,10 +55,24 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        await _storage.write(key: 'access_token', value: data['access_token']);
-        await _storage.write(key: 'refresh_token', value: data['refresh_token']);
+        final accessToken = data['access_token'];
+        final refreshToken = data['refresh_token'];
+
+        // DEBUG : Afficher le token reçu
+        print('✅ Token reçu de Keycloak:');
+        print('   Length: ${accessToken?.length ?? 0}');
+        // Stocker les tokens
+        await _storage.write(key: 'access_token', value: accessToken);
+        await _storage.write(key: 'refresh_token', value: refreshToken);
+
+        // VÉRIFICATION : Relire immédiatement pour confirmer
+        final verifyToken = await _storage.read(key: 'access_token');
+        print('✅ Token stocké et vérifié:');
+        print('   Length: ${verifyToken?.length ?? 0}');
+        print('   Match: ${verifyToken == accessToken}');
 
         if (mounted) {
+          print('✅ go to Dashboard:');
           context.go('/dashboard');
         }
       } else {

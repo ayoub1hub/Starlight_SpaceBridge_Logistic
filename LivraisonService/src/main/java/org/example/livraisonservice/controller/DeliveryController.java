@@ -5,9 +5,15 @@ import org.example.livraisonservice.service.DeliveryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.web.bind.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -21,6 +27,21 @@ public class DeliveryController {
     @GetMapping
     public ResponseEntity<List<DeliveryDto>> getAllDeliveries() {
         return ResponseEntity.ok(deliveryService.getAllDeliveries());
+    }
+
+    @GetMapping("/my-deliveries")
+    public ResponseEntity<List<DeliveryDto>> getMyDeliveries(Principal principal) {
+        String driverUsername = principal.getName();
+        System.out.println("Requête my-deliveries pour : " + driverUsername); // log pour debug
+
+        try {
+            List<DeliveryDto> deliveries = deliveryService.getDeliveriesForDriver(driverUsername);
+            return ResponseEntity.ok(deliveries);
+        } catch (Exception e) {
+            System.err.println("Erreur pour " + driverUsername + " : " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.ok(List.of()); // retourne liste vide au lieu de 500
+        }
     }
 
     @GetMapping("/{id}")

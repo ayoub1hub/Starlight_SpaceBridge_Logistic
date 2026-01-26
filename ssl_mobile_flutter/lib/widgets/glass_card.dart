@@ -5,12 +5,14 @@ class GlassCard extends StatelessWidget {
   final Widget child;
   final EdgeInsets padding;
   final Color? glowColor;
+  final EdgeInsets? margin;
 
   const GlassCard(
       {super.key,
         required this.child,
         this.padding = const EdgeInsets.all(24),
-        this.glowColor});
+        this.glowColor,
+        this.margin});
 
   @override
   Widget build(BuildContext context) {
@@ -19,6 +21,8 @@ class GlassCard extends StatelessWidget {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
+
+          margin: margin ?? EdgeInsets.zero,  // utilise margin si fourni
           padding: padding,
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.08),

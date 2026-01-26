@@ -10,6 +10,7 @@ import java.util.Optional;
 @Repository
 public interface DriverRepository extends JpaRepository<Driver, UUID> {
     Optional<Driver> findByPersonId(UUID personId);
+    Optional<Driver> findByName(String username);
     boolean existsByPersonId(UUID personId);
     Optional<Driver> findFirstByAvailableTrueAndStatus(String status);
 }

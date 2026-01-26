@@ -7,6 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.jwt.Jwt;
+
 
 import java.util.*;
 
@@ -22,6 +25,20 @@ public class DriverController {
     public ResponseEntity<List<DriverDto>> getAllDrivers() {
         List<DriverDto> drivers = driverService.getAllDrivers();
         return ResponseEntity.ok(drivers);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<DriverDto> getCurrentDriver(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        System.out.println(authentication);
+        String username = authentication.getName(); // ou jwt.getSubject() si JwtAuthenticationToken
+        DriverDto driver = driverService.getDriverByName(username);
+        if (driver == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(driver);
     }
 
     @GetMapping("/{id}")

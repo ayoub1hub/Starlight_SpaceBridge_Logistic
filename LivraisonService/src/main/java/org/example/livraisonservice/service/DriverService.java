@@ -31,6 +31,12 @@ public class DriverService {
         return toEnrichedDto(driver);
     }
 
+    public DriverDto getDriverByName(String username) {
+        Driver driver = driverRepository.findByName(username)
+                .orElseThrow(() -> new RuntimeException("Chauffeur non trouvé"));
+        return toEnrichedDto(driver);
+    }
+
     private DriverDto toEnrichedDto(Driver driver) {
         DriverDto dto = driverMapper.toDto(driver);
 

@@ -72,6 +72,8 @@ public class SecurityConfig {
                         // Autres modifications livraison
                         .pathMatchers(HttpMethod.PUT, "/api/deliveries/**").hasAnyRole("admin", "respo")
 
+                        .pathMatchers(HttpMethod.GET, "/api/drivers/**").hasAnyRole("driver", "admin", "respo")
+
                         // Incidents et tracking
                         .pathMatchers("/api/incidents/**", "/api/tracking/**").hasRole("driver")
 

@@ -2,15 +2,22 @@ package org.example.livraisonservice.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import org.example.livraisonservice.entity.*;
+import lombok.Data;
+import org.example.livraisonservice.entity.SeverityLevel;
 
-import java.util.List;
 import java.util.UUID;
 
-public record IncidentRequestDto(
-        @NotNull IncidentType type,
-        @NotNull SeverityLevel severity,
-        @NotBlank String description,
-        UUID deliveryId,
-        List<String> photoUrls
-) {}
+@Data
+public class IncidentRequestDto {
+    @NotNull
+    private UUID deliveryId;
+
+    @NotBlank
+    private String type;  // "delay", "damage", etc. → sera mappé vers IncidentType
+
+    @NotNull
+    private SeverityLevel severity;
+
+    @NotBlank
+    private String description;
+}

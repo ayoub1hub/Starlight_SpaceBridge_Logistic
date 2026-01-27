@@ -1,16 +1,19 @@
 package org.example.livraisonservice.controller;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.example.livraisonservice.dto.DriverDto;
 import org.example.livraisonservice.service.DriverService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 
+import java.security.Principal;
 import java.util.*;
 
 @RestController
@@ -28,17 +31,22 @@ public class DriverController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<DriverDto> getCurrentDriver(Authentication authentication) {
-        if (authentication == null || !authentication.isAuthenticated()) {
+    public ResponseEntity<DriverDto> getCurrentDriver(Principal principal) {
+        if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        System.out.println(authentication);
-        String username = authentication.getName(); // ou jwt.getSubject() si JwtAuthenticationToken
-        DriverDto driver = driverService.getDriverByName(username);
-        if (driver == null) {
+        String personIdStr = principal.getName();   // ← c'est le sub
+        System.out.println("Utilisateur connecté → personId = " + personIdStr);
+        try {
+            DriverDto dto = driverService.getCurrentDriverProfile(personIdStr);
+            return ResponseEntity.ok(dto);
+        } catch (EntityNotFoundException e) {
+            System.out.println("Chauffeur non trouvé pour personId: " + personIdStr);
             return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-        return ResponseEntity.ok(driver);
     }
 
     @GetMapping("/{id}")

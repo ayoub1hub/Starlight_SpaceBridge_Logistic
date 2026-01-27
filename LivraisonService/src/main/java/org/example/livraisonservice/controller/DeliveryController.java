@@ -59,7 +59,7 @@ public class DeliveryController {
     @PutMapping("/{id}/status")
     public ResponseEntity<DeliveryDto> updateDeliveryStatus(
             @PathVariable("id") UUID id,
-            @RequestParam String status) {
+            @RequestParam("status") String status) {
         DeliveryDto updated = deliveryService.updateDeliveryStatus(id, status);
         return ResponseEntity.ok(updated);
     }

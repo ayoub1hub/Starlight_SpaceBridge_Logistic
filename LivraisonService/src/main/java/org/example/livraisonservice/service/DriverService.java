@@ -1,11 +1,13 @@
 package org.example.livraisonservice.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.example.livraisonservice.client.PersonClient;
 import org.example.livraisonservice.dto.*;
 import org.example.livraisonservice.entity.*;
 import org.example.livraisonservice.mapper.*;
 import org.example.livraisonservice.repository.*;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -32,9 +34,26 @@ public class DriverService {
     }
 
     public DriverDto getDriverByName(String username) {
+        System.out.println(username);
         Driver driver = driverRepository.findByName(username)
                 .orElseThrow(() -> new RuntimeException("Chauffeur non trouvé"));
         return toEnrichedDto(driver);
+    }
+
+    // DriverService.java
+
+    public DriverDto getCurrentDriverProfile(String personIdStr) {
+        UUID personId;
+        try {
+            personId = UUID.fromString(personIdStr);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("L'identifiant Keycloak (sub) n'est pas un UUID valide: " + personIdStr);
+        }
+        Driver driver = driverRepository.findByPersonId(personId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Aucun chauffeur associé à la personne Keycloak : " + personId
+                ));
+        return driverMapper.toDto(driver);
     }
 
     private DriverDto toEnrichedDto(Driver driver) {

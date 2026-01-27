@@ -35,6 +35,101 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
     _fetchMission();
   }
 
+  void _showSnackBar({
+    required String message,
+    required Color backgroundColor,
+    IconData? icon,
+    Duration duration = const Duration(seconds: 3),
+  }) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            if (icon != null) ...[
+              Icon(icon, color: Colors.white, size: 20),
+              const SizedBox(width: 12),
+            ],
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(color: Colors.white, fontSize: 14),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: backgroundColor.withOpacity(0.95),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 80), // marge haute pour éviter les boutons
+        duration: duration,
+        elevation: 6,
+      ),
+    );
+  }
+
+  Future<void> _updateDeliveryStatus(String newStatus) async {
+    try {
+      final token = await _storage.read(key: 'access_token');
+      if (token == null || token.trim().isEmpty) {
+        _showSnackBar(
+          message: 'Session invalide. Veuillez vous reconnecter.',
+          backgroundColor: Colors.redAccent,
+          icon: Icons.error_outline,
+          duration: const Duration(seconds: 4),
+        );
+        return;
+      }
+
+      final uri = Uri.parse(
+        'http://localhost:8080/api/deliveries/${widget.id}/status?status=$newStatus',
+      );
+
+      print('→ PUT $uri');
+
+      final response = await http.put(
+        uri,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      ).timeout(const Duration(seconds: 10));
+
+      print('← Status: ${response.statusCode}');
+
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        _showSnackBar(
+          message: newStatus == 'IN_TRANSIT'
+              ? 'Livraison démarrée avec succès'
+              : 'Livraison marquée comme terminée',
+          backgroundColor: Colors.green.shade700,
+          icon: Icons.check_circle_outline,
+        );
+        await _fetchMission();
+      } else if (response.statusCode == 401 || response.statusCode == 403) {
+        await _storage.deleteAll();
+        if (mounted) context.go('/login?reason=expired');
+        _showSnackBar(
+          message: 'Session expirée',
+          backgroundColor: Colors.redAccent,
+          icon: Icons.warning_amber,
+          duration: const Duration(seconds: 4),
+        );
+      } else {
+        final errorBody = response.body.isNotEmpty ? ' → ${response.body}' : '';
+        throw Exception('Erreur ${response.statusCode}$errorBody');
+      }
+    } catch (e) {
+      print('Erreur mise à jour statut: $e');
+      _showSnackBar(
+        message: 'Échec de la mise à jour : $e',
+        backgroundColor: Colors.redAccent,
+        icon: Icons.error_outline,
+        duration: const Duration(seconds: 5),
+      );
+    }
+  }
+
   Future<void> _fetchMission() async {
     setState(() {
       isLoading = true;
@@ -517,12 +612,8 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
                   'DÉMARRER LA LIVRAISON',
                   Icons.play_circle_filled_rounded,
                   MissionColors.accentPrimary,
-                      () {
-                    // TODO: PUT /api/deliveries/{id}/status?status=IN_TRANSIT
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Livraison démarrée')),
-                    );
-                    _fetchMission();
+                      () async {
+                    await _updateDeliveryStatus('IN_TRANSIT');
                   },
                 ),
 
@@ -531,12 +622,8 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
                   'MARQUER COMME LIVRÉE',
                   Icons.check_circle,
                   Colors.greenAccent,
-                      () {
-                    // TODO: PUT /api/deliveries/{id}/status?status=DELIVERED
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Livraison marquée comme terminée')),
-                    );
-                    _fetchMission();
+                      () async {
+                    await _updateDeliveryStatus('DELIVERED');
                   },
                 ),
                 const SizedBox(height: 12),
@@ -544,7 +631,7 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
                   'SIGNALER UN PROBLÈME',
                   Icons.report_problem,
                   Colors.orangeAccent,
-                      () => context.go('/incident_report?id=${widget.id}'),
+                      () => context.go('/mission/${widget.id}/incident'),
                 ),
               ],
             ],
@@ -553,7 +640,6 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
       ),
     );
   }
-
   Widget _buildPrimaryActionButton(String label, IconData icon, Color color, VoidCallback onPressed) {
     return SizedBox(
       width: double.infinity,

@@ -1,6 +1,11 @@
+// org.example.livraisonservice.entity.IncidentType.java
 package org.example.livraisonservice.entity;
 
-
 public enum IncidentType {
-    DELAY, DAMAGE, ACCESS_DENIED, RECIPIENT_UNAVAILABLE, VEHICLE_ISSUE, OTHER
+    DELAY,                    // Retard
+    DAMAGE,                   // Dommage au colis
+    ACCESS_DENIED,            // Accès refusé
+    RECIPIENT_UNAVAILABLE,    // Destinataire absent
+    VEHICLE_ISSUE,            // Problème véhicule
+    OTHER                     // Autre
 }

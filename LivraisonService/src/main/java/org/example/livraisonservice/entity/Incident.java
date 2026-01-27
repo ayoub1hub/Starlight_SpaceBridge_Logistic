@@ -8,36 +8,56 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Table(name = "incidents")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Incident {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    private String incidentCode; // ex: INC-2025-001
+    @Column(nullable = false, unique = true)
+    private String incidentCode;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private IncidentType type;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private SeverityLevel severity;
 
+    @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(nullable = false)
     private UUID deliveryId;
 
+    @Column(nullable = false)
     private UUID warehouseId;
 
+    @Column(nullable = false)
     private String reportedBy;
 
-    private LocalDateTime reportedAt = LocalDateTime.now();
+    @Column(nullable = false)
+    private UUID driverId;
+
+    @Column(nullable = false)
+    private LocalDateTime reportedAt;
 
     @ElementCollection
+    @CollectionTable(name = "incident_photos", joinColumns = @JoinColumn(name = "incident_id"))
     private List<String> photoUrls = new ArrayList<>();
 
-    private boolean resolved = false;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private IncidentStatus status = IncidentStatus.OPEN;
 
     private LocalDateTime resolvedAt;
-}
 
+    private LocalDateTime updatedAt;
+}

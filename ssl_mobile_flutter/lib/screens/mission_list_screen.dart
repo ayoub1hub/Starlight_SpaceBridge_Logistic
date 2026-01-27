@@ -188,7 +188,7 @@ class MissionListScreenState extends State<MissionListScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           children: [
                             _buildFilterChip('Toutes', 'all'),
-                            _buildFilterChip('En attente', 'pending'),
+                            _buildFilterChip('En attente', 'scheduled'),
                             _buildFilterChip('En cours', 'in_transit'),
                             _buildFilterChip('Livrées', 'delivered'),
                             _buildFilterChip('Annulées', 'cancelled'),

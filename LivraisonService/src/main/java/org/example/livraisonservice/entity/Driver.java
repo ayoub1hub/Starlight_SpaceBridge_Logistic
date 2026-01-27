@@ -28,7 +28,7 @@ public class Driver {
 
     private String licenseNumber;
     private String vehicleType;
-    private String vehiclePlateNumber;  // On garde uniquement celui-ci
+    private String vehiclePlateNumber;
     private Double rating;
     private String status; // "Available", "On Duty", "Inactive", etc.
 
@@ -37,7 +37,6 @@ public class Driver {
 
     private Boolean available = true;
 
-    // lien vers Person dans stockservice (source de vérité pour name/phone) ===
     @Column(unique = true, nullable = false)
     private UUID personId;
 

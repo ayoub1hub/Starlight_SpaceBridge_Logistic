@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -6,6 +7,8 @@ import 'package:image_picker/image_picker.dart';
 import '../widgets/starfield_background.dart';
 import '../widgets/glass_card.dart';
 import '../theme/mission_colors.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class IncidentReportScreen extends StatefulWidget {
   final String id;
@@ -21,6 +24,7 @@ class _IncidentReportScreenState extends State<IncidentReportScreen> {
   final TextEditingController _descriptionController = TextEditingController();
   List<XFile> photos = [];
   bool uploading = false;
+  final _storage = const FlutterSecureStorage();
 
   final ImagePicker _picker = ImagePicker();
 
@@ -79,51 +83,167 @@ class _IncidentReportScreenState extends State<IncidentReportScreen> {
         'recipient_name': 'Client ${i + 1}',
       });
 
+  @override
+  void initState() {
+    super.initState();
+    print('IncidentReportScreen initialisé pour deliveryId: ${widget.id}');
+  }
+
   Future<void> _pickPhotos() async {
-    final List<XFile>? picked =
-    await _picker.pickMultiImage(limit: 4 - photos.length);
-    if (picked != null) {
-      setState(() {
-        photos.addAll(picked);
-      });
+    print('Début sélection photos...');
+    try {
+      final List<XFile>? picked = await _picker.pickMultiImage(limit: 4 - photos.length);
+      if (picked != null && picked.isNotEmpty) {
+        print('Photos sélectionnées : ${picked.length} fichier(s)');
+        setState(() {
+          photos.addAll(picked);
+        });
+      } else {
+        print('Aucune photo sélectionnée');
+      }
+    } catch (e) {
+      print('Erreur lors de la sélection des photos : $e');
+      _showSnackBar(
+            message: 'Échec : $e',
+            backgroundColor: Colors.redAccent,
+            icon: Icons.error_outline,
+      );
     }
   }
 
   void _removePhoto(int index) {
+    print('Suppression photo à l\'index $index');
     setState(() {
       photos.removeAt(index);
     });
   }
 
-  void _submitReport() async {
+  void _showSnackBar({
+    required String message,
+    required Color backgroundColor,
+    IconData? icon,
+    Duration duration = const Duration(seconds: 3),
+  }) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            if (icon != null) ...[
+              Icon(icon, color: Colors.white, size: 20),
+              const SizedBox(width: 12),
+            ],
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(color: Colors.white, fontSize: 14),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: backgroundColor.withOpacity(0.95),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 80), // marge haute pour éviter les boutons
+        duration: duration,
+        elevation: 6,
+      ),
+    );
+  }
+
+  Future<void> _submitReport() async {
+    print('=== Début soumission incident ===');
+    print('Delivery ID: ${widget.id}');
+    print('Type: $selectedType');
+    print('Sévérité: $selectedSeverity');
+    print('Description: ${_descriptionController.text.trim()}');
+    print('Photos: ${photos.length}');
+
     if (selectedType.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select incident type')),
-      );
+      _showSnackBar(message: 'Veuillez sélectionner un type', backgroundColor: Colors.orangeAccent, icon: Icons.warning_amber);
       return;
     }
     if (_descriptionController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please provide a description')),
-      );
+      _showSnackBar(message: 'Veuillez ajouter une description', backgroundColor: Colors.orangeAccent, icon: Icons.warning_amber);
       return;
     }
 
     setState(() => uploading = true);
 
-    // Simulate upload delay
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      final token = await _storage.read(key: 'access_token');
+      if (token == null || token.trim().isEmpty) {
+        throw Exception('Session invalide – reconnectez-vous');
+      }
 
-    setState(() => uploading = false);
+      print('Token OK (longueur: ${token.length})');
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Incident reported successfully'),
-        backgroundColor: Colors.green,
-      ),
-    );
+      final uri = Uri.parse('http://localhost:8080/api/incidents');
+      print('POST → $uri');
 
-    context.go('/dashboard');
+      var request = http.MultipartRequest('POST', uri)
+        ..headers['Authorization'] = 'Bearer $token';
+
+      // Ajout du JSON comme part "request" avec Content-Type JSON
+      request.files.add(
+        http.MultipartFile.fromString(
+          'request',
+          jsonEncode({
+            'deliveryId': widget.id,
+            'type': selectedType.toUpperCase(),
+            'severity': selectedSeverity.toUpperCase(),
+            'description': _descriptionController.text.trim(),
+          }),
+          filename: 'request.json',
+          contentType: http.MediaType('application', 'json'),
+        ),
+      );
+
+      print('JSON envoyé (request part)');
+
+      for (var photo in photos) {
+        final file = await http.MultipartFile.fromPath('photos', photo.path);
+        request.files.add(file);
+        print('Ajout photo: ${photo.name}');
+      }
+
+      final streamedResponse = await request.send();
+      print('Réponse brute – Statut: ${streamedResponse.statusCode}');
+
+      final responseBytes = await streamedResponse.stream.toBytes();
+      final response = http.Response.bytes(responseBytes, streamedResponse.statusCode);
+
+      print('Réponse finale – Statut: ${response.statusCode}');
+      print('Body: ${response.body}');
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        _showSnackBar(
+          message: 'Incident signalé avec succès !',
+          backgroundColor: Colors.green.shade700,
+          icon: Icons.check_circle_outline,
+        );
+        context.go('/dashboard');
+      } else {
+        _showSnackBar(
+          message: 'Erreur serveur (${response.statusCode})',
+          backgroundColor: Colors.redAccent,
+          icon: Icons.error_outline,
+          duration: const Duration(seconds: 5),
+        );
+        print('Erreur: ${response.body}');
+      }
+    } catch (e, stack) {
+      print('Erreur soumission: $e');
+      debugPrintStack(stackTrace: stack);
+      _showSnackBar(
+        message: 'Échec : $e',
+        backgroundColor: Colors.redAccent,
+        icon: Icons.error_outline,
+        duration: const Duration(seconds: 5),
+      );
+    } finally {
+      setState(() => uploading = false);
+      print('=== Fin soumission ===\n');
+    }
   }
 
   @override
@@ -164,7 +284,7 @@ class _IncidentReportScreenState extends State<IncidentReportScreen> {
                       IconButton(
                         icon: const Icon(Icons.arrow_back_ios_new,
                             color: Colors.white70),
-                        onPressed: () => context.pop(),
+                        onPressed: () => context.go('/mission/${widget.id}'),
                       ),
                       const SizedBox(width: 12),
                       const Expanded(

@@ -49,6 +49,30 @@ public class DriverController {
         }
     }
 
+    @PutMapping("/me")
+    public ResponseEntity<DriverDto> updateCurrentDriver(
+            Principal principal,
+            @Valid @RequestBody DriverUpdateDto updateDto) {
+
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String personIdStr = principal.getName();
+        System.out.println("Mise à jour du profil pour personId = " + personIdStr);
+
+        try {
+            DriverDto updated = driverService.updateCurrentDriverProfile(personIdStr, updateDto);
+            return ResponseEntity.ok(updated);
+        } catch (EntityNotFoundException e) {
+            System.out.println("Chauffeur non trouvé pour personId: " + personIdStr);
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<DriverDto> getDriver(@PathVariable("id") UUID id) {
         DriverDto driver = driverService.getDriverById(id);

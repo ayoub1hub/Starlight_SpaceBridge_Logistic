@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ssl_delivery_ops/screens/settings_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/dashboard_screen.dart';
@@ -58,6 +59,10 @@ final GoRouter _router = GoRouter(
       path: '/mission/:id/incident',
       builder: (context, state) =>
           IncidentReportScreen(id: state.pathParameters['id']!),
+    ),
+    GoRoute(
+      path: '/settings',
+      builder: (context, state) => const SettingsScreen(),
     ),
   ],
   initialLocation: '/',

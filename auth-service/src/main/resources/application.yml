@@ -1,0 +1,66 @@
+server:
+  port: 8087
+
+spring:
+  application:
+    name: auth-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/auth_db
+    username: postgres
+    password: "postgres"
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+
+
+
+  # === ADD KEYCLOAK OAUTH2 RESOURCE SERVER ===
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8079/realms/ssl-realm
+
+# Microservice URLs (keep if used for business logic)
+comptabiliteservice:
+  url: http://localhost:8082
+livraisonservice:
+  url: http://localhost:8083
+stockservice:
+  url: http://localhost:8084
+venteeservice:
+  url: http://localhost:8085
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${spring.cloud.client.ip-address:-localhost}:${server.port}
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+    metadata-map:
+      zone: primary
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+logging:
+  level:
+    root: INFO
+    org.example.authservice: DEBUG
+    org.springframework.security: DEBUG  # ← helpful for OAuth2 debugging
+    org.springframework.web: INFO

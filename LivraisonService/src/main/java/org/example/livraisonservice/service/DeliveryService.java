@@ -44,7 +44,7 @@ public class DeliveryService {
     }
 
     public List<DeliveryDto> getDeliveriesForDriver(String personId) {
-        // getSubject retoune un uuid de type string ; il faut le convertir
+        //getSubject retoune un uuid de type string ; il faut le convertir
         UUID personUuid = UUID.fromString(personId);
         Driver driver = driverRepository.findByPersonId(personUuid)
                 .orElseThrow(() -> new RuntimeException("Driver not found for person: " + personId));

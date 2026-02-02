@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.UUID;
 @RestController
 @RequestMapping("/api/products")
-@CrossOrigin(origins = "*")
+
 public class ProduitController {
     private final ProduitService produitService;
     public ProduitController(ProduitService produitService) {

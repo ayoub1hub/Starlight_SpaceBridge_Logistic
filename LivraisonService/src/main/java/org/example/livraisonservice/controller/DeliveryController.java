@@ -32,15 +32,14 @@ public class DeliveryController {
     @GetMapping("/my-deliveries")
     public ResponseEntity<List<DeliveryDto>> getMyDeliveries(Principal principal) {
         String driverUsername = principal.getName();
-        System.out.println("Requête my-deliveries pour : " + driverUsername); // log pour debug
-
+        System.out.println("request my-deliveries for : " + driverUsername);
         try {
             List<DeliveryDto> deliveries = deliveryService.getDeliveriesForDriver(driverUsername);
             return ResponseEntity.ok(deliveries);
         } catch (Exception e) {
             System.err.println("Erreur pour " + driverUsername + " : " + e.getMessage());
             e.printStackTrace();
-            return ResponseEntity.ok(List.of()); // retourne liste vide au lieu de 500
+            return ResponseEntity.ok(List.of());
         }
     }
 

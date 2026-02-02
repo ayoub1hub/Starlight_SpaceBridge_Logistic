@@ -20,6 +20,12 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8079/realms/ssl-realm
+
 commandeservice:
   url: http://localhost:8081
 
@@ -29,7 +35,7 @@ comptabiliteservice:
 livraisonservice:
   url: http://localhost:8083
 
-venteservice:
+venteeservice:
   url: http://localhost:8085
 
 eureka:
@@ -58,4 +64,6 @@ logging:
     root: INFO
     org.example.stockservice: DEBUG
     org.springframework.cloud: INFO
-    org.springframework.web: INFO
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.security.oauth2: DEBUG

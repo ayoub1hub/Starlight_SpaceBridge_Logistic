@@ -23,7 +23,6 @@
         <spring-cloud.version>2023.0.0</spring-cloud.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <lombok.version>1.18.30</lombok.version>
-        <!-- Remove jjwt.version — no longer needed -->
     </properties>
 
     <dependencies>
@@ -38,7 +37,6 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
-        <!-- ✅ REPLACE spring-boot-starter-security with OAuth2 Resource Server -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
@@ -66,10 +64,6 @@
             <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
-
-        <!-- ===== REMOVE JWT DEPENDENCIES ===== -->
-        <!-- Delete all jjwt-api, jjwt-impl, jjwt-jackson -->
-
         <!-- ===== LOMBOK & MAPSTRUCT ===== -->
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -96,8 +90,6 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-
-        <!-- No need for spring-security-test unless testing security -->
 
         <!-- ===== DEVTOOLS ===== -->
         <dependency>

@@ -214,7 +214,7 @@ export class RoleSelectionComponent implements OnInit {
     this.isProcessing.set(true);
     this.errorMessage.set(null);
 
-    console.log('🚀 Proceeding to Keycloak authentication');
+    console.log('🚀 Proceeding to User Login for Keycloak authentication');
     console.log('📝 Selected role:', role);
     console.log('📝 Entrepot code:', this.entrepotCode());
 
@@ -231,7 +231,7 @@ export class RoleSelectionComponent implements OnInit {
       console.log('✅ Verification - localStorage user_role:', savedLocalRole);
 
       // Log all session data before redirect
-      console.log('📦 Complete session data before Keycloak redirect:', {
+      console.log('📦 Complete session data before User Login redirect:', {
         entrepot_code: sessionStorage.getItem('entrepot_code'),
         entrepot_id: sessionStorage.getItem('entrepot_id'),
         selected_role: sessionStorage.getItem('selected_role'),
@@ -241,18 +241,14 @@ export class RoleSelectionComponent implements OnInit {
       // Wait a moment to ensure storage is saved
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      console.log('🔐 Initiating Keycloak login...');
-      console.log('🔗 Redirect URI will be:', window.location.origin + '/auth/callback');
-
-      // ✅ Call AuthService login method - this will redirect to Keycloak
-      this.authService.login();
-
-      // Note: Code after login() won't execute because login() redirects the page
-      console.log('⚠️ If you see this, the redirect did not happen!');
+      console.log('🔐 Redirecting to User Login component for Keycloak authentication...');
+      
+      // ✅ Redirect to user login component instead of direct Keycloak login
+      this.router.navigate(['/auth/user-login']);
 
     } catch (error) {
-      console.error('❌ Error during Keycloak login initiation:', error);
-      this.errorMessage.set('Failed to start authentication. Please try again.');
+      console.error('❌ Error during redirect to user login:', error);
+      this.errorMessage.set('Failed to proceed to authentication. Please try again.');
       this.isProcessing.set(false);
     }
   }

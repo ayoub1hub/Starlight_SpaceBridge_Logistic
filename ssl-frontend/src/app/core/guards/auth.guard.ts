@@ -39,7 +39,6 @@ export const authGuard: CanActivateFn = async (): Promise<boolean | UrlTree> => 
 
   if (!isAuthenticated) {
     console.log('❌ authGuard: Not authenticated, clearing session and redirecting to login');
-    // Clear any stale session data
     sessionStorage.removeItem('entrepot_code');
     sessionStorage.removeItem('entrepot_id');
     sessionStorage.removeItem('selected_role');
@@ -59,7 +58,8 @@ export const authGuard: CanActivateFn = async (): Promise<boolean | UrlTree> => 
     // FIRST: Try to get role from Keycloak token as fallback
     const userInfo = authService.getUserInfo();
     if (userInfo && userInfo.roles && userInfo.roles.length > 0) {
-      const keycloakRole = userInfo.roles[0]; // Use first available role
+      const keycloakRole = userInfo.roles.find((r: string) => r === 'admin' || r === 'responsable') as UserRole || userInfo.roles[0];
+      // ADDED: prefer valid business role if multiple roles exist
       console.log('ℹ️ authGuard: Found role in Keycloak token, auto-setting:', keycloakRole);
       authService.setSelectedRole(keycloakRole);
       role = keycloakRole;
@@ -86,7 +86,7 @@ export const authGuard: CanActivateFn = async (): Promise<boolean | UrlTree> => 
     }
   }
 
-  // Check again after all attempts
+  // ADDED: Final safety check – if still no role after all sources, force role selection if flow exists
   if (role === null) {
     console.log('⚠️ authGuard: Still no role available after all attempts');
 
@@ -98,8 +98,10 @@ export const authGuard: CanActivateFn = async (): Promise<boolean | UrlTree> => 
       return router.parseUrl('/auth/role-selection');
     }
 
-    // No flow in progress, start from beginning
-    console.log('ℹ️ authGuard: No flow in progress, redirecting to login');
+    // No flow in progress → clear everything and go back to start
+    console.log('ℹ️ authGuard: No flow in progress, clearing session and redirecting to login');
+    sessionStorage.clear(); // ADDED: more aggressive cleanup
+    localStorage.removeItem('user_role');
     return router.parseUrl('/auth/login');
   }
 
@@ -124,12 +126,11 @@ export const adminGuard: CanActivateFn = async (): Promise<boolean | UrlTree> =>
     return true;
   }
 
-  // Check authentication status
+  // ADDED: Quick early exit if not even authenticated
   const isAuthenticated = await authService.isAuthenticated();
-
   if (!isAuthenticated) {
-    console.log('❌ adminGuard: Not authenticated, redirecting to login');
-    sessionStorage.clear();
+    console.log('❌ adminGuard: Not authenticated, clearing session and redirecting to login');
+    sessionStorage.clear(); // ADDED: full cleanup
     localStorage.removeItem('user_role');
     return router.parseUrl('/auth/login');
   }
@@ -140,14 +141,17 @@ export const adminGuard: CanActivateFn = async (): Promise<boolean | UrlTree> =>
     return router.parseUrl('/responsable/dashboard');
   }
 
-  // No role selected, check if in flow
+  // ADDED: If no role but flow in progress → go to role selection
   const entrepotCode = sessionStorage.getItem('entrepot_code');
   if (entrepotCode) {
-    console.log('⚠️ adminGuard: No role selected, redirecting to role selection');
+    console.log('⚠️ adminGuard: No role but entrepot flow detected → redirecting to role selection');
     return router.parseUrl('/auth/role-selection');
   }
 
-  console.log('⚠️ adminGuard: No valid flow, redirecting to login');
+  // Fallback: no valid role or flow → restart
+  console.log('⚠️ adminGuard: No valid role or flow, clearing session and redirecting to login');
+  sessionStorage.clear(); // ADDED: consistent cleanup
+  localStorage.removeItem('user_role');
   return router.parseUrl('/auth/login');
 };
 
@@ -168,12 +172,11 @@ export const responsableGuard: CanActivateFn = async (): Promise<boolean | UrlTr
     return true;
   }
 
-  // Check authentication status
+  // ADDED: Quick early exit if not even authenticated
   const isAuthenticated = await authService.isAuthenticated();
-
   if (!isAuthenticated) {
-    console.log('❌ responsableGuard: Not authenticated, redirecting to login');
-    sessionStorage.clear();
+    console.log('❌ responsableGuard: Not authenticated, clearing session and redirecting to login');
+    sessionStorage.clear(); // ADDED
     localStorage.removeItem('user_role');
     return router.parseUrl('/auth/login');
   }
@@ -184,13 +187,16 @@ export const responsableGuard: CanActivateFn = async (): Promise<boolean | UrlTr
     return router.parseUrl('/admin/dashboard');
   }
 
-  // No role selected, check if in flow
+  // ADDED: If no role but flow in progress → go to role selection
   const entrepotCode = sessionStorage.getItem('entrepot_code');
   if (entrepotCode) {
-    console.log('⚠️ responsableGuard: No role selected, redirecting to role selection');
+    console.log('⚠️ responsableGuard: No role but entrepot flow detected → redirecting to role selection');
     return router.parseUrl('/auth/role-selection');
   }
 
-  console.log('⚠️ responsableGuard: No valid flow, redirecting to login');
+  // Fallback: restart login
+  console.log('⚠️ responsableGuard: No valid role or flow, clearing session and redirecting to login');
+  sessionStorage.clear(); // ADDED
+  localStorage.removeItem('user_role');
   return router.parseUrl('/auth/login');
 };

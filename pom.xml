@@ -26,6 +26,7 @@
         <module>comptabiliteservice</module>
         <module>notificationService</module>
         <module>VenteService</module>
+        <module>auth-service</module>
     </modules>
 
     <dependencyManagement>

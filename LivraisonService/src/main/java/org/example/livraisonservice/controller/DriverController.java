@@ -3,6 +3,7 @@ package org.example.livraisonservice.controller;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.example.livraisonservice.dto.DriverDto;
+import org.example.livraisonservice.dto.DriverUpdateDto;
 import org.example.livraisonservice.service.DriverService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,13 +13,13 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
 
-
 import java.security.Principal;
 import java.util.*;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 @RestController
 @RequestMapping("/api/drivers")
-@CrossOrigin(origins = "*")
 public class DriverController {
 
     @Autowired
@@ -35,7 +36,7 @@ public class DriverController {
         if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        String personIdStr = principal.getName();   // ← c'est le sub
+        String personIdStr = principal.getName();
         System.out.println("Utilisateur connecté → personId = " + personIdStr);
         try {
             DriverDto dto = driverService.getCurrentDriverProfile(personIdStr);
@@ -49,23 +50,18 @@ public class DriverController {
         }
     }
 
-    @PutMapping("/me")
+    @PutMapping("/{id}/info")
     public ResponseEntity<DriverDto> updateCurrentDriver(
-            Principal principal,
+            @PathVariable("id") UUID id,
             @Valid @RequestBody DriverUpdateDto updateDto) {
 
-        if (principal == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        String personIdStr = principal.getName();
-        System.out.println("Mise à jour du profil pour personId = " + personIdStr);
+        System.out.println("Mise à jour du profil pour personId = " + id);
 
         try {
-            DriverDto updated = driverService.updateCurrentDriverProfile(personIdStr, updateDto);
+            DriverDto updated = driverService.updateDriverProfile(id, updateDto);
             return ResponseEntity.ok(updated);
         } catch (EntityNotFoundException e) {
-            System.out.println("Chauffeur non trouvé pour personId: " + personIdStr);
+            System.out.println("Chauffeur non trouvé pour personId: " + id);
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
             e.printStackTrace();

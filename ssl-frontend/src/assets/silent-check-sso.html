@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Silent SSO Check</title>
+  <script>
+    parent.postMessage(location.href, location.origin);
+  </script>
 </head>
-<body>
-<script>
-  parent.postMessage(location.href, location.origin);
-</script>
-</body>
+<body></body>
 </html>

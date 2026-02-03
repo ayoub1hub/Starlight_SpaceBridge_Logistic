@@ -62,6 +62,15 @@ spring:
           filters:
             - StripPrefix=0
 
+
+        # ==================== AUTH SERVICE ====================
+        - id: auth-service-public
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - StripPrefix=0
+
   security:
     oauth2:
       resourceserver:

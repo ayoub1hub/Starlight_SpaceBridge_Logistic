@@ -14,6 +14,7 @@ public class DriverDto {
     // remplis via appel à stockservice
     private String name;
     private String phone;
+    private String email;
 
     private String vehiclePlateNumber;
     private String vehicleType;

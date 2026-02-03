@@ -41,6 +41,17 @@ interface BackendStockDto {
   updatedAt?: string;
 }
 
+// Backend Page structure for paginated response
+interface BackendPageResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+  first: boolean;
+  last: boolean;
+}
+
 // Frontend interface (what we use in components)
 export interface StockItem {
   id?: string;
@@ -102,22 +113,22 @@ export class StockService {
   /**
    * Get paginated stock items with optional entrepot filter
    */
-  getStockItems(page: number = 0, size: number = 10, entrepotId?: string): Observable<PageResponse<StockItem>> {
+    getStockItems(page: number = 0, size: number = 10, entrepotId?: string): Observable<PageResponse<StockItem>> {
     let params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());
 
     if (entrepotId && entrepotId.trim() !== '') {
       params = params.set('entrepotId', entrepotId);
-      console.log('🔗 Fetching stocks for entrepot:', entrepotId);
     }
 
-    console.log('🔗 Fetching stocks from:', `${this.API_URL}?${params.toString()}`);
-
-    return this.http.get<PageResponse<BackendStockDto>>(`${this.API_URL}`, { params }).pipe(
+    return this.http.get<BackendPageResponse<BackendStockDto>>(`${this.API_URL}`, { params }).pipe(
       map(response => ({
-        ...response,
-        content: response.content.map(dto => this.transformToStockItem(dto))
+        content: response.content.map(dto => this.transformToStockItem(dto)),
+        totalElements: response.totalElements,
+        totalPages: response.totalPages,
+        size: response.size,
+        number: response.number
       }))
     );
   }

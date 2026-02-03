@@ -11,7 +11,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/tracking")
-@CrossOrigin(origins = "*")
 public class DeliveryTrackingController {
 
     @Autowired

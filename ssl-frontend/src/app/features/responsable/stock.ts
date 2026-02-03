@@ -269,15 +269,12 @@ export class StockComponent implements OnInit {
    * Load all products for the dropdown
    */
   loadProducts(): void {
-    console.log('🔄 Loading products...');
     this.productService.getAllProducts().subscribe({
       next: (products) => {
         this.products.set(products);
-        console.log('✅ Loaded', products.length, 'products');
-        console.log('📦 Products:', products);
       },
       error: (error) => {
-        console.error('❌ Error loading products:', error);
+        console.error('Error loading products:', error);
         this.showError('Failed to load products');
       }
     });
@@ -287,15 +284,12 @@ export class StockComponent implements OnInit {
    * Load all warehouses for the dropdown
    */
   loadWarehouses(): void {
-    console.log('🔄 Loading warehouses...');
     this.entrepotService.getAllEntrepots().subscribe({
       next: (entrepots) => {
         this.warehouses.set(entrepots);
-        console.log('✅ Loaded', entrepots.length, 'warehouses');
-        console.log('🏢 Warehouses:', entrepots);
       },
       error: (error) => {
-        console.error('❌ Error loading warehouses:', error);
+        console.error('Error loading warehouses:', error);
         this.showError('Failed to load warehouses');
       }
     });
@@ -313,14 +307,10 @@ export class StockComponent implements OnInit {
     if (entrepotCode) {
       if (this.isValidUUID(entrepotCode)) {
         entrepotId = entrepotCode;
-        console.log('✅ Using entrepot UUID:', entrepotId);
       } else {
-        console.warn('⚠️ entrepot_code is not a UUID, showing all stocks:', entrepotCode);
         entrepotId = undefined;
       }
     }
-
-    console.log('📊 Loading inventory with entrepotId:', entrepotId);
 
     this.stockService.getStockItems(this.currentPage(), this.pageSize(), entrepotId).subscribe({
       next: (response) => {
@@ -328,10 +318,9 @@ export class StockComponent implements OnInit {
         this.totalPages.set(response.totalPages);
         this.totalElements.set(response.totalElements);
         this.isLoading.set(false);
-        console.log('✅ Loaded', response.content.length, 'inventory items');
       },
       error: (error) => {
-        console.error('❌ Error loading inventory:', error);
+        console.error('Error loading inventory:', error);
         this.isLoading.set(false);
         this.handleApiError(error, 'loading inventory');
       }
@@ -380,24 +369,18 @@ export class StockComponent implements OnInit {
    */
   exportToCSV(): void {
     this.isExporting.set(true);
-    console.log('📊 Starting CSV export...');
 
     const entrepotCode = sessionStorage.getItem('entrepot_code');
     let entrepotId: string | undefined;
 
     if (entrepotCode && this.isValidUUID(entrepotCode)) {
       entrepotId = entrepotCode;
-      console.log('📦 Exporting for entrepot:', entrepotId);
     } else {
-      console.log('📦 Exporting all stocks (no valid entrepot filter)');
       entrepotId = undefined;
     }
 
     this.stockService.exportStockToCSV(entrepotId).subscribe({
       next: (blob) => {
-        console.log('✅ CSV blob received, size:', blob.size, 'bytes');
-
-        // Create download link
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
@@ -413,10 +396,9 @@ export class StockComponent implements OnInit {
 
         this.isExporting.set(false);
         this.showSuccess('Inventory exported successfully');
-        console.log('✅ CSV export complete!');
       },
       error: (error) => {
-        console.error('❌ Error exporting CSV:', error);
+        console.error('Error exporting CSV:', error);
         this.isExporting.set(false);
         this.showError('Failed to export CSV. Please try again.');
       }
@@ -475,14 +457,13 @@ export class StockComponent implements OnInit {
 
     operation.subscribe({
       next: (result) => {
-        console.log('✅ Stock saved:', result);
         this.showSuccess(isUpdate ? 'Stock updated successfully' : 'Stock created successfully');
         this.closeStockModal();
         this.loadInventory();
         this.loadLowStockItems();
       },
       error: (error) => {
-        console.error('❌ Error saving stock:', error);
+        console.error('Error saving stock:', error);
         const errorMsg = this.extractErrorMessage(error);
         this.stockModal?.setError(errorMsg);
       }
@@ -503,14 +484,13 @@ export class StockComponent implements OnInit {
 
     this.stockService.deleteStockItem(stockToDelete.id).subscribe({
       next: () => {
-        console.log('✅ Stock deleted:', stockToDelete.id);
         this.showSuccess(`Stock "${stockToDelete.productName}" deleted successfully`);
         this.closeDeleteModal();
         this.loadInventory();
         this.loadLowStockItems();
       },
       error: (error) => {
-        console.error('❌ Error deleting stock:', error);
+        console.error('Error deleting stock:', error);
         const errorMsg = this.extractErrorMessage(error);
         this.deleteModal?.setError(errorMsg);
       }

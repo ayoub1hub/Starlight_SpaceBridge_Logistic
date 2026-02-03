@@ -24,8 +24,7 @@ export class ProductService {
   /**
    * Get all products
    */
-  getAllProducts(): Observable<Product[]> {
-    console.log('🔗 Fetching all products from:', this.API_URL);
+    getAllProducts(): Observable<Product[]> {
     return this.http.get<Product[]>(this.API_URL);
   }
 

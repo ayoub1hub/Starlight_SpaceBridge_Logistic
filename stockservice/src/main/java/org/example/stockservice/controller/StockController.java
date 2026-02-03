@@ -27,7 +27,6 @@ public class StockController {
         this.stockService = stockService;
     }
 
-    // Get all stocks with pagination (FIXED - added @RequestParam)
     @GetMapping
     public ResponseEntity<Page<StockDto>> getAllStocks(
             @RequestParam(defaultValue = "0") int page,
@@ -185,14 +184,14 @@ public class StockController {
                     .build());
             headers.setContentLength(csvBytes.length);
 
-            System.out.println("✅ CSV export successful - " + stocks.size() + " items exported");
+            System.out.println("CSV export successful - " + stocks.size() + " items exported");
 
             return ResponseEntity.ok()
                     .headers(headers)
                     .body(csvBytes);
 
         } catch (Exception e) {
-            System.err.println("❌ Error exporting CSV: " + e.getMessage());
+            System.err.println("Error exporting CSV: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }

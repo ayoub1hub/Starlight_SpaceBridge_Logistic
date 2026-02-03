@@ -7,7 +7,6 @@ import org.example.livraisonservice.dto.*;
 import org.example.livraisonservice.entity.*;
 import org.example.livraisonservice.mapper.*;
 import org.example.livraisonservice.repository.*;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -19,7 +18,7 @@ public class DriverService {
 
     private final DriverRepository driverRepository;
     private final DriverMapper driverMapper;
-    private final PersonClient personClient;  // ← injecté
+    private final PersonClient personClient;
 
     public List<DriverDto> getAllDrivers() {
         return driverRepository.findAll().stream()
@@ -32,15 +31,6 @@ public class DriverService {
                 .orElseThrow(() -> new RuntimeException("Chauffeur non trouvé"));
         return toEnrichedDto(driver);
     }
-
-    public DriverDto getDriverByName(String username) {
-        System.out.println(username);
-        Driver driver = driverRepository.findByName(username)
-                .orElseThrow(() -> new RuntimeException("Chauffeur non trouvé"));
-        return toEnrichedDto(driver);
-    }
-
-    // DriverService.java
 
     public DriverDto getCurrentDriverProfile(String personIdStr) {
         UUID personId;
@@ -64,12 +54,32 @@ public class DriverService {
             dto.setName(person.getName());
             dto.setPhone(person.getPhone());
         } catch (Exception e) {
-            // En cas de microservice down ou person supprimé
             dto.setName("Personne introuvable");
             dto.setPhone("N/A");
         }
 
         return dto;
+    }
+
+    public DriverDto updateDriverProfile(UUID driverId, DriverUpdateDto updateDto) {
+
+        System.out.println(updateDto);
+
+        Driver driver = driverRepository.findByPersonId(driverId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Driver not found with id: " + driverId
+                ));
+        driver.setName(updateDto.getName());
+        driver.setPhone(updateDto.getPhone());
+        driver.setEmail(updateDto.getEmail());
+        driver.setVehiclePlateNumber(updateDto.getVehiclePlateNumber());
+        driver.setLicenseNumber(updateDto.getLicenseNumber());
+        driver.setVehicleType(updateDto.getVehicleType());
+        driver.setUpdatedAt(LocalDateTime.now());
+        System.out.println(driver);
+
+        Driver saved = driverRepository.save(driver);
+        return driverMapper.toDto(saved);
     }
 
     public DriverDto createDriver(DriverDto dto) {
@@ -129,4 +139,5 @@ public class DriverService {
         }
         driverRepository.deleteById(id);
     }
+
 }

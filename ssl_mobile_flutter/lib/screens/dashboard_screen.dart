@@ -4,7 +4,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
-import 'dart:math' as math;
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -247,12 +246,22 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
                       fontSize: 28,
                       fontWeight: FontWeight.w900,
                       color: Colors.white,
-                      letterSpacing: 2,
+                      letterSpacing: 0,
                     ),
                   ),
                 ],
               ),
               _buildProfileSection(),
+              Row(
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.settings, color: Colors.white.withOpacity(0.7)),
+                    onPressed: () => context.go('/settings'),
+                    tooltip: 'Settings',
+                  ),
+                  const SizedBox(width: 8),
+                ],
+              ),
             ],
           ),
         ],

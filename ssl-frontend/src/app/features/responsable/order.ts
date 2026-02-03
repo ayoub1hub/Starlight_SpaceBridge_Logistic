@@ -197,23 +197,17 @@ export class OrdersComponent implements OnInit {
     this.isLoading.set(true);
     this.errorMessage.set('');
 
-    console.log('📡 Loading orders from API Gateway...');
+    console.log('Loading orders from API Gateway...');
 
     this.orderService.getOrders(this.currentPage(), 10, this.selectedStatus).subscribe({
       next: (response) => {
-        console.log('✅ Orders loaded successfully:', response);
         this.orders.set(response.content);
         this.totalElements.set(response.totalElements);
         this.totalPages.set(response.totalPages);
         this.isLoading.set(false);
       },
       error: (err) => {
-        console.error('❌ Gateway Connection Failed:', err);
-        console.error('Error details:', {
-          status: err.status,
-          message: err.message,
-          url: err.url
-        });
+        console.error('Gateway Connection Failed:', err);
 
         let errorMsg = 'Failed to load orders. ';
         if (err.status === 0) {
@@ -239,7 +233,6 @@ export class OrdersComponent implements OnInit {
   }
 
   onSearch(): void {
-    console.log('Searching for:', this.searchTerm);
   }
 
   goToPage(page: number): void {
@@ -274,9 +267,6 @@ export class OrdersComponent implements OnInit {
 
   // CREATE ORDER - TEST FUNCTION
   openCreateModal() {
-    console.log('Creating test order...');
-
-    // Create a simple test order
     const testOrder: PurchaseOrder = {
       orderNumber: 'PO-TEST-' + Date.now(),
       supplierName: 'SpaceX Cargo Division',
@@ -296,27 +286,22 @@ export class OrdersComponent implements OnInit {
       ]
     };
 
-    // Send it to the API
     this.orderService.createOrder(testOrder).subscribe({
       next: (response) => {
-        console.log('✅ Order created successfully:', response);
         alert('Order created successfully!');
-        this.loadOrders(); // Reload the list
+        this.loadOrders();
       },
       error: (err) => {
-        console.error('❌ Failed to create order:', err);
         alert('Failed to create order: ' + (err.message || 'Unknown error'));
       }
     });
   }
 
   viewOrderDetails(order: PurchaseOrder) {
-    console.log('Viewing Mission:', order.orderNumber);
   }
 
   editOrder(order: PurchaseOrder, event: Event) {
     event.stopPropagation();
-    console.log('Editing order:', order.id);
   }
 
   deleteOrder(order: PurchaseOrder, event: Event) {
@@ -324,11 +309,9 @@ export class OrdersComponent implements OnInit {
     if (confirm(`Delete order ${order.orderNumber}?`)) {
       this.orderService.deleteOrder(order.id!).subscribe({
         next: () => {
-          console.log('Order deleted successfully');
           this.loadOrders();
         },
         error: (err) => {
-          console.error('Failed to delete order:', err);
           this.errorMessage.set('Failed to delete order');
         }
       });

@@ -25,12 +25,6 @@ public class AuthController {
     public AuthController(EntrepotValidationService entrepotValidationService) {
         this.entrepotValidationService = entrepotValidationService;
     }
-
-    /**
-     * NEW ENDPOINT: Step 1 - Public entrepot credential validation
-     * This endpoint does NOT require Keycloak authentication
-     * It validates entrepot code + password before sending user to Keycloak
-     */
     @PostMapping("/auth/entrepot/validate-credentials")
     public ResponseEntity<EntrepotValidationResponse> validateEntrepotCredentials(
             @Valid @RequestBody EntrepotCredentialsRequest request) {
@@ -48,11 +42,6 @@ public class AuthController {
         }
     }
 
-    /**
-     * EXISTING ENDPOINT: Step 3 - Validate entrepot access after Keycloak login
-     * This endpoint REQUIRES Keycloak authentication
-     * It ensures the authenticated user has access to the requested entrepot + role
-     */
     @PostMapping("/auth/entrepot/validate")
     public ResponseEntity<?> validateEntrepotAccess(
             @AuthenticationPrincipal OidcUser user,

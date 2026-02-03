@@ -5,9 +5,9 @@ class AuthService {
   static final FlutterAppAuth _appAuth = FlutterAppAuth();
   static const FlutterSecureStorage _storage = FlutterSecureStorage();
 
-  static const String clientId = 'ssl-mobile';                    // ton client Keycloak
-  static const String redirectUri = 'com.ssl.app://callback';     // doit matcher Keycloak
-  static const String issuer = 'http://localhost:8079/realms/ssl-realm'; // emulator
+  static const String clientId = 'ssl-mobile';
+  static const String redirectUri = 'com.ssl.app://callback';
+  static const String issuer = 'http://localhost:8079/realms/ssl-realm';
 
   static Future<bool> login() async {
     try {

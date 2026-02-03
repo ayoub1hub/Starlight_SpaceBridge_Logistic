@@ -12,7 +12,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     '/api/auth/entrepot/validate-credentials',
     '/api/public',
     '/assets',
-    '/actuator'
+    '/actuator',
+    '/protocol/openid-connect/token' // Exclude Keycloak token endpoint
   ];
 
   const isPublicEndpoint = publicEndpoints.some(endpoint => req.url.includes(endpoint));
@@ -22,8 +23,37 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     return next(req);
   }
 
+  // Get token - try direct token first, then Keycloak
+  const directToken = localStorage.getItem('access_token');
+  
+  if (directToken) {
+    console.log('🔐 Using direct token from localStorage');
+    const clonedRequest = req.clone({
+      setHeaders: {
+        Authorization: `Bearer ${directToken}`
+      }
+    });
+
+    console.log('🔐 Adding auth token to request:', req.url);
+    console.log('🎫 Token preview:', directToken.substring(0, 50) + '...');
+
+    return next(clonedRequest).pipe(
+      catchError((error: HttpErrorResponse) => {
+        if (error.status === 401) {
+          console.error('❌ 401 Unauthorized - Direct token may be invalid or expired');
+          console.error('📍 Failed URL:', req.url);
+        } else if (error.status === 403) {
+          console.error('❌ 403 Forbidden - User lacks required permissions');
+          console.error('📍 Failed URL:', req.url);
+        }
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // Fallback to Keycloak if no direct token
   if (!keycloakService.isLoggedIn()) {
-    console.warn('⚠️ User not logged in, request may fail:', req.url);
+    console.warn('⚠️ User not logged in and no direct token, request may fail:', req.url);
     return next(req);
   }
 

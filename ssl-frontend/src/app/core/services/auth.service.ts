@@ -1,10 +1,9 @@
-// src/app/core/services/auth.service.ts
 import { Injectable, inject, signal } from '@angular/core';
 import { KeycloakService } from 'keycloak-angular';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-export type UserRole = 'admin' | 'responsable'; // Changed to lowercase
+export type UserRole = 'admin' | 'responsable';
 
 export interface EntrepotValidationRequest {
   code: string;
@@ -16,6 +15,7 @@ export interface EntrepotValidationResponse {
   message?: string;
   entrepotId?: string;
 }
+
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -34,10 +34,6 @@ export class AuthService {
     }
   }
 
-  /**
-   * Load role from localStorage if it exists
-   * This ensures role persists across page refreshes
-   */
   private loadRoleFromStorage(): void {
     const storedRole = localStorage.getItem('user_role');
     if (storedRole === 'admin' || storedRole === 'responsable') { // Changed to lowercase
@@ -48,9 +44,6 @@ export class AuthService {
     }
   }
 
-  /**
-   * Get roles from Keycloak token
-   */
   private getRolesFromToken(): UserRole[] {
     try {
       const token = this.keycloak.getKeycloakInstance().tokenParsed;
@@ -64,21 +57,18 @@ export class AuthService {
           role === 'admin' || role === 'responsable' // Changed to lowercase to match Keycloak
         );
 
-      console.log('🎭 Roles from Keycloak token:', roles);
+      console.log('Roles from Keycloak token:', roles);
       return roles;
     } catch (e) {
-      console.error('❌ Failed to parse roles from token:', e);
+      console.error('Failed to parse roles from token:', e);
       return [];
     }
   }
 
-  /**
-   * Get the current selected role
-   */
   selectedRole(): UserRole | null {
     const current = this.roleSignal();
     if (current) {
-      console.log('✅ Current role from signal:', current);
+      console.log('Current role from signal:', current);
       return current;
     }
 
@@ -87,42 +77,35 @@ export class AuthService {
       const roles = this.getRolesFromToken();
       const role = roles[0] || null;
       if (role) {
-        console.log('ℹ️ No role in signal, using first Keycloak role:', role);
+        console.log('ℹNo role in signal, using first Keycloak role:', role);
         this.setSelectedRole(role);
       }
       return role;
     }
 
-    console.log('ℹ️ No role available');
+    console.log('ℹNo role available');
     return null;
   }
 
-  /**
-   * Set the selected role and persist it
-   */
   setSelectedRole(role: UserRole): void{
-    console.log('💾 Setting role:', role);
+    console.log('Setting role:', role);
     this.roleSignal.set(role);
     localStorage.setItem('user_role', role);
-    console.log('✅ Role saved to localStorage and signal:', role);
+    console.log('Role saved to localStorage and signal:', role);
   }
 
-  /**
-   * Auto-detect and set role from Keycloak token
-   * Returns the role if found, null otherwise
-   */
   autoSetRoleFromToken(): UserRole | null {
-    console.log('🔍 Auto-detecting role from Keycloak token...');
+    console.log('Auto-detecting role from Keycloak token...');
     const roles = this.getRolesFromToken();
 
     if (roles.length > 0) {
       const role = roles[0];
-      console.log('✅ Found role in token, auto-setting:', role);
+      console.log('Found role in token, auto-setting:', role);
       this.setSelectedRole(role);
       return role;
     }
 
-    console.log('⚠️ No valid role found in token');
+    console.log('⚠No valid role found in token');
     return null;
   }
 
@@ -130,6 +113,26 @@ export class AuthService {
    * Check if user is authenticated via Keycloak
    */
   async isAuthenticated(): Promise<boolean> {
+    // Check if we have a direct token from password grant
+    const directToken = localStorage.getItem('access_token');
+    if (directToken) {
+      console.log('🔐 Found direct token, checking validity...');
+      try {
+        // Simple token validation - check if not expired
+        const tokenParts = directToken.split('.');
+        if (tokenParts.length === 3) {
+          const payload = JSON.parse(atob(tokenParts[1]));
+          const now = Math.floor(Date.now() / 1000);
+          if (payload.exp > now) {
+            console.log('✅ Direct token is valid');
+            return true;
+          }
+        }
+      } catch (e) {
+        console.error('❌ Invalid direct token format');
+      }
+    }
+
     const isLoggedIn = this.keycloak.isLoggedIn();
     console.log('🔐 Authentication check - isLoggedIn:', isLoggedIn);
     return isLoggedIn;
@@ -178,17 +181,11 @@ export class AuthService {
     this.keycloak.logout(logoutUri);
   }
 
-  /**
-   * Validate entrepot credentials (Optional - for warehouse-specific access)
-   */
   validateEntrepotCredentials(request: EntrepotValidationRequest): Observable<EntrepotValidationResponse> {
     console.log('📝 Validating entrepot credentials for code:', request.code);
     return this.http.post<EntrepotValidationResponse>('/api/auth/entrepot/validate-credentials', request);
   }
 
-  /**
-   * Get user info from Keycloak
-   */
   getUserInfo() {
     try {
       const token = this.keycloak.getKeycloakInstance().tokenParsed;

@@ -12,7 +12,7 @@ class SettingsScreen extends StatefulWidget {
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> with TickerProviderStateMixin {
+class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProviderStateMixin {
   final _storage = const FlutterSecureStorage();
   final _formKey = GlobalKey<FormState>();
 
@@ -23,6 +23,8 @@ class _SettingsScreenState extends State<SettingsScreen> with TickerProviderStat
   final _vehiclePlateController = TextEditingController();
   final _licenseNumberController = TextEditingController();
   final _vehicleModelController = TextEditingController();
+  final _idDriver = TextEditingController();
+  final _idPerson = TextEditingController();
 
   bool isLoading = true;
   bool isSaving = false;
@@ -30,23 +32,11 @@ class _SettingsScreenState extends State<SettingsScreen> with TickerProviderStat
 
   Map<String, dynamic>? driverData;
 
-  late AnimationController _starsController;
-  late AnimationController _particlesController;
   late AnimationController _fadeController;
 
   @override
   void initState() {
     super.initState();
-
-    _starsController = AnimationController(
-      duration: const Duration(seconds: 120),
-      vsync: this,
-    )..repeat();
-
-    _particlesController = AnimationController(
-      duration: const Duration(seconds: 30),
-      vsync: this,
-    )..repeat();
 
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 800),
@@ -64,8 +54,8 @@ class _SettingsScreenState extends State<SettingsScreen> with TickerProviderStat
     _vehiclePlateController.dispose();
     _licenseNumberController.dispose();
     _vehicleModelController.dispose();
-    _starsController.dispose();
-    _particlesController.dispose();
+    _idDriver.dispose();
+    _idPerson.dispose();
     _fadeController.dispose();
     super.dispose();
   }
@@ -100,9 +90,13 @@ class _SettingsScreenState extends State<SettingsScreen> with TickerProviderStat
           _emailController.text = data['email']?.toString() ?? '';
           _vehiclePlateController.text = data['vehiclePlateNumber']?.toString() ?? '';
           _licenseNumberController.text = data['licenseNumber']?.toString() ?? '';
-          _vehicleModelController.text = data['vehicleModel']?.toString() ?? '';
+          _vehicleModelController.text = data['vehicleType']?.toString() ?? '';
+          _idDriver.text = data['id'] ?? '';
+          _idPerson.text = data['personId'] ?? '';
           isLoading = false;
         });
+
+        print(driverData);
         _fadeController.forward();
       } else if (response.statusCode == 401) {
         await _storage.deleteAll();
@@ -119,20 +113,31 @@ class _SettingsScreenState extends State<SettingsScreen> with TickerProviderStat
   }
 
   Future<void> _saveProfile() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
     setState(() => isSaving = true);
 
     try {
       final token = await _storage.read(key: 'access_token');
-      if (token == null) {
-        throw Exception('Session expired');
+      if (token == null) throw Exception('Session expired');
+
+      final String driverId = _idDriver.text.trim();
+      final String personId = _idPerson.text.trim();
+
+      if (driverId.isEmpty) {
+        _showMessage('ID chauffeur manquant', isError: true);
+        return;
       }
 
-      final response = await http.put(
-        Uri.parse('http://localhost:8080/api/drivers/me'),
+      print('ID person         : "$personId"');
+      print('ID utilisé        : "$driverId"');
+
+      final uri = Uri.parse('http://localhost:8080/api/drivers/$personId/info');
+      print('URL envoyée       : $uri');
+
+      final response = await http
+          .put(
+        uri,
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -144,21 +149,26 @@ class _SettingsScreenState extends State<SettingsScreen> with TickerProviderStat
           'email': _emailController.text.trim(),
           'vehiclePlateNumber': _vehiclePlateController.text.trim(),
           'licenseNumber': _licenseNumberController.text.trim(),
-          'vehicleModel': _vehicleModelController.text.trim(),
+          'vehicleType': _vehicleModelController.text.trim(),
         }),
-      ).timeout(const Duration(seconds: 10));
+      )
+          .timeout(const Duration(seconds: 10));
+
+      print('Réponse serveur   : ${response.statusCode}');
+      print('Body réponse      : ${response.body}');
 
       if (response.statusCode == 200 || response.statusCode == 204) {
-        _showMessage('Profile updated successfully!');
+        _showMessage('Profil mis à jour avec succès !');
         await _loadDriverProfile();
       } else if (response.statusCode == 401) {
         await _storage.deleteAll();
         if (mounted) context.go('/login');
       } else {
-        throw Exception('Failed to update profile');
+        _showMessage('Échec : ${response.statusCode} - ${response.body}', isError: true);
       }
     } catch (e) {
-      _showMessage('Failed to save: $e', isError: true);
+      print('Exception complète : $e');
+      _showMessage('Erreur : $e', isError: true);
     } finally {
       setState(() => isSaving = false);
     }
@@ -181,48 +191,17 @@ class _SettingsScreenState extends State<SettingsScreen> with TickerProviderStat
       SnackBar(
         content: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(
-                isError ? Icons.error_outline_rounded : Icons.check_circle_rounded,
-                color: Colors.white,
-                size: 20,
-              ),
+            Icon(
+              isError ? Icons.error_outline : Icons.check_circle_outline,
+              color: Colors.white,
             ),
             const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    isError ? 'Error' : 'Success',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 15,
-                    ),
-                  ),
-                  Text(
-                    message,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.white.withOpacity(0.9),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            Expanded(child: Text(message)),
           ],
         ),
-        backgroundColor: isError ? const Color(0xFFEF4444) : const Color(0xFF10B981),
+        backgroundColor: isError ? Colors.red : Colors.green,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        margin: const EdgeInsets.all(16),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
@@ -233,165 +212,85 @@ class _SettingsScreenState extends State<SettingsScreen> with TickerProviderStat
     if (errorMessage != null) return _buildErrorScreen();
 
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(
-        children: [
-          _buildGalaxyBackground(),
-          _buildAmbientParticles(),
-          SafeArea(
-            child: Column(
-              children: [
-                _buildHeader(),
-                Expanded(
-                  child: FadeTransition(
-                    opacity: _fadeController,
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(16),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          children: [
-                            _buildProfileHeader(),
-                            const SizedBox(height: 24),
-                            _buildPersonalInfoSection(),
-                            const SizedBox(height: 20),
-                            _buildVehicleInfoSection(),
-                            const SizedBox(height: 20),
-                            _buildAccountSection(),
-                            const SizedBox(height: 120),
-                          ],
-                        ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF000814), Color(0xFF001D3D), Color(0xFF000814)],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              _buildHeader(),
+              Expanded(
+                child: FadeTransition(
+                  opacity: _fadeController,
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(20),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          _buildProfileHeader(),
+                          const SizedBox(height: 32),
+                          _buildPersonalInfoSection(),
+                          const SizedBox(height: 24),
+                          _buildVehicleInfoSection(),
+                          const SizedBox(height: 24),
+                          _buildAccountSection(),
+                          const SizedBox(height: 120),
+                        ],
                       ),
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
       floatingActionButton: _buildSaveButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
-  Widget _buildGalaxyBackground() {
-    return AnimatedBuilder(
-      animation: Listenable.merge([_starsController, _particlesController]),
-      builder: (context, child) {
-        return Container(
-          decoration: const BoxDecoration(
-            gradient: RadialGradient(
-              center: Alignment(-0.3, -0.7),
-              radius: 1.8,
-              colors: [
-                Color(0xFF1E1B4B),
-                Color(0xFF0F172A),
-                Color(0xFF020617),
-                Color(0xFF000000),
-              ],
-              stops: [0.0, 0.3, 0.7, 1.0],
-            ),
-          ),
-          child: Stack(
-            children: [
-              CustomPaint(
-                painter: NebulaPainter(animationValue: _starsController.value),
-                size: Size.infinite,
-              ),
-              CustomPaint(
-                painter: EnhancedStarsPainter(animationValue: _starsController.value),
-                size: Size.infinite,
-              ),
-              CustomPaint(
-                painter: CosmicEffectsPainter(animationValue: _particlesController.value),
-                size: Size.infinite,
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildAmbientParticles() {
-    return AnimatedBuilder(
-      animation: _particlesController,
-      builder: (context, child) {
-        return CustomPaint(
-          painter: AmbientParticlesPainter(animationValue: _particlesController.value),
-          size: Size.infinite,
-        );
-      },
-    );
-  }
-
   Widget _buildHeader() {
     return Container(
-      margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.white.withOpacity(0.08),
-            Colors.white.withOpacity(0.03),
+            Colors.purple.withOpacity(0.1),
+            Colors.transparent,
           ],
         ),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: const Color(0xFF8B5CF6).withOpacity(0.3),
-          width: 1.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF8B5CF6).withOpacity(0.2),
-            blurRadius: 30,
-            spreadRadius: -5,
-          ),
-        ],
+        border: Border(bottom: BorderSide(color: Colors.white.withOpacity(0.1))),
       ),
       child: Row(
         children: [
           Container(
-            width: 48,
-            height: 48,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFF8B5CF6).withOpacity(0.2),
-                  const Color(0xFF8B5CF6).withOpacity(0.1),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: const Color(0xFF8B5CF6).withOpacity(0.3),
-              ),
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white.withOpacity(0.2)),
             ),
             child: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF8B5CF6), size: 20),
+              icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white70),
               onPressed: () => context.go('/dashboard'),
-              padding: EdgeInsets.zero,
             ),
           ),
           const SizedBox(width: 16),
-          Expanded(
-            child: ShaderMask(
-              shaderCallback: (bounds) => const LinearGradient(
-                colors: [
-                  Color(0xFF8B5CF6),
-                  Color(0xFF6366F1),
-                ],
-              ).createShader(bounds),
-              child: const Text(
-                'SETTINGS',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white,
-                  letterSpacing: 1.2,
-                ),
+          const Expanded(
+            child: Text(
+              'SETTINGS',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w900,
+                color: Colors.white,
+                letterSpacing: 2,
               ),
             ),
           ),
@@ -407,14 +306,14 @@ class _SettingsScreenState extends State<SettingsScreen> with TickerProviderStat
     Color statusColor;
     switch (status) {
       case 'available':
-        statusColor = const Color(0xFF00FFA3);
+        statusColor = Colors.green;
         break;
       case 'busy':
       case 'in_transit':
-        statusColor = const Color(0xFFFFB800);
+        statusColor = Colors.orange;
         break;
       default:
-        statusColor = const Color(0xFF64748B);
+        statusColor = Colors.grey;
     }
 
     return Container(
@@ -424,22 +323,12 @@ class _SettingsScreenState extends State<SettingsScreen> with TickerProviderStat
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF8B5CF6).withOpacity(0.2),
-            const Color(0xFF6366F1).withOpacity(0.1),
+            Colors.white.withOpacity(0.08),
+            Colors.white.withOpacity(0.02),
           ],
         ),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: const Color(0xFF8B5CF6).withOpacity(0.3),
-          width: 1.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF8B5CF6).withOpacity(0.2),
-            blurRadius: 20,
-            spreadRadius: -5,
-          ),
-        ],
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withOpacity(0.1)),
       ),
       child: Column(
         children: [
@@ -448,36 +337,29 @@ class _SettingsScreenState extends State<SettingsScreen> with TickerProviderStat
             height: 100,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: const LinearGradient(
-                colors: [Color(0xFF8B5CF6), Color(0xFF6366F1)],
+              gradient: LinearGradient(
+                colors: [Colors.purple.shade400, Colors.purple.shade700],
               ),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF8B5CF6).withOpacity(0.5),
+                  color: Colors.purple.withOpacity(0.5),
                   blurRadius: 20,
                   spreadRadius: 2,
                 ),
               ],
             ),
-            child: Container(
-              margin: const EdgeInsets.all(3),
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                color: Color(0xFF0F172A),
-              ),
-              child: Center(
-                child: Text(
-                  name.isNotEmpty ? name[0].toUpperCase() : '?',
-                  style: const TextStyle(
-                    color: Color(0xFF8B5CF6),
-                    fontSize: 48,
-                    fontWeight: FontWeight.w900,
-                  ),
+            child: Center(
+              child: Text(
+                name.isNotEmpty ? name[0].toUpperCase() : '?',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 48,
+                  fontWeight: FontWeight.w900,
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           Text(
             name,
             style: const TextStyle(
@@ -486,18 +368,13 @@ class _SettingsScreenState extends State<SettingsScreen> with TickerProviderStat
               fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  statusColor.withOpacity(0.2),
-                  statusColor.withOpacity(0.1),
-                ],
-              ),
+              color: statusColor.withOpacity(0.2),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: statusColor.withOpacity(0.4)),
+              border: Border.all(color: statusColor.withOpacity(0.5)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -512,7 +389,6 @@ class _SettingsScreenState extends State<SettingsScreen> with TickerProviderStat
                       BoxShadow(
                         color: statusColor,
                         blurRadius: 8,
-                        spreadRadius: 2,
                       ),
                     ],
                   ),
@@ -538,8 +414,8 @@ class _SettingsScreenState extends State<SettingsScreen> with TickerProviderStat
   Widget _buildPersonalInfoSection() {
     return _buildCard(
       title: 'PERSONAL INFORMATION',
-      icon: Icons.person_outline_rounded,
-      color: const Color(0xFF06B6D4),
+      icon: Icons.person_outline,
+      color: Colors.blue,
       children: [
         _buildTextField(
           controller: _nameController,
@@ -588,7 +464,7 @@ class _SettingsScreenState extends State<SettingsScreen> with TickerProviderStat
     return _buildCard(
       title: 'VEHICLE INFORMATION',
       icon: Icons.local_shipping_outlined,
-      color: const Color(0xFF10B981),
+      color: Colors.green,
       children: [
         _buildTextField(
           controller: _vehiclePlateController,
@@ -627,19 +503,19 @@ class _SettingsScreenState extends State<SettingsScreen> with TickerProviderStat
     return _buildCard(
       title: 'ACCOUNT',
       icon: Icons.manage_accounts_outlined,
-      color: const Color(0xFFEF4444),
+      color: Colors.red,
       children: [
         Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                const Color(0xFFEF4444).withOpacity(0.2),
-                const Color(0xFFEF4444).withOpacity(0.1),
+                Colors.red.withOpacity(0.2),
+                Colors.red.withOpacity(0.1),
               ],
             ),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: const Color(0xFFEF4444).withOpacity(0.3),
+              color: Colors.red.withOpacity(0.3),
             ),
           ),
           child: Material(
@@ -656,15 +532,15 @@ class _SettingsScreenState extends State<SettingsScreen> with TickerProviderStat
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            const Color(0xFFEF4444).withOpacity(0.3),
-                            const Color(0xFFEF4444).withOpacity(0.2),
+                            Colors.red.withOpacity(0.3),
+                            Colors.red.withOpacity(0.2),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(
-                        Icons.logout_rounded,
-                        color: Color(0xFFEF4444),
+                        Icons.logout,
+                        color: Colors.red,
                         size: 24,
                       ),
                     ),
@@ -693,8 +569,8 @@ class _SettingsScreenState extends State<SettingsScreen> with TickerProviderStat
                       ),
                     ),
                     Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      color: const Color(0xFFEF4444).withOpacity(0.6),
+                      Icons.arrow_forward_ios,
+                      color: Colors.red.withOpacity(0.6),
                       size: 18,
                     ),
                   ],
@@ -720,46 +596,27 @@ class _SettingsScreenState extends State<SettingsScreen> with TickerProviderStat
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.white.withOpacity(0.1),
-            Colors.white.withOpacity(0.05),
+            Colors.white.withOpacity(0.08),
+            Colors.white.withOpacity(0.02),
           ],
         ),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: color.withOpacity(0.3),
-          width: 1.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: color.withOpacity(0.1),
-            blurRadius: 20,
-            spreadRadius: -5,
-          ),
-        ],
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withOpacity(0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [color.withOpacity(0.2), color.withOpacity(0.1)],
-                  ),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: color, size: 20),
-              ),
+              Icon(icon, color: color, size: 20),
               const SizedBox(width: 12),
               Text(
                 title,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 13,
-                  fontWeight: FontWeight.w800,
-                  color: color.withOpacity(0.9),
-                  letterSpacing: 1.5,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white60,
+                  letterSpacing: 2,
                 ),
               ),
             ],
@@ -791,30 +648,30 @@ class _SettingsScreenState extends State<SettingsScreen> with TickerProviderStat
         ),
         prefixIcon: Icon(
           icon,
-          color: const Color(0xFF06B6D4).withOpacity(0.6),
+          color: Colors.white.withOpacity(0.5),
           size: 20,
         ),
         filled: true,
         fillColor: Colors.white.withOpacity(0.05),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Color(0xFF06B6D4), width: 2),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.blue, width: 2),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Color(0xFFEF4444), width: 2),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.red, width: 2),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Color(0xFFEF4444), width: 2),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.red, width: 2),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
@@ -823,18 +680,18 @@ class _SettingsScreenState extends State<SettingsScreen> with TickerProviderStat
 
   Widget _buildSaveButton() {
     return Container(
-      width: MediaQuery.of(context).size.width - 32,
+      width: MediaQuery.of(context).size.width - 40,
+      height: 60,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF8B5CF6), Color(0xFF6366F1)],
+          colors: [Colors.purple, Color(0xFF6B00B3)],
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF8B5CF6).withOpacity(0.5),
-            blurRadius: 30,
+            color: Colors.purple.withOpacity(0.4),
+            blurRadius: 20,
             offset: const Offset(0, 10),
-            spreadRadius: -5,
           ),
         ],
       ),
@@ -846,26 +703,23 @@ class _SettingsScreenState extends State<SettingsScreen> with TickerProviderStat
           height: 24,
           child: CircularProgressIndicator(
             color: Colors.white,
-            strokeWidth: 3,
+            strokeWidth: 2,
           ),
         )
-            : const Icon(Icons.save_rounded, size: 24),
+            : const Icon(Icons.save, size: 24),
         label: Text(
           isSaving ? 'SAVING...' : 'SAVE CHANGES',
           style: const TextStyle(
             fontSize: 16,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 1.5,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 2,
           ),
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
           foregroundColor: Colors.white,
           shadowColor: Colors.transparent,
-          padding: const EdgeInsets.symmetric(vertical: 18),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         ),
       ),
     );
@@ -885,10 +739,9 @@ class _SettingsScreenState extends State<SettingsScreen> with TickerProviderStat
               Colors.white.withOpacity(0.05),
             ],
           ),
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: const Color(0xFFEF4444).withOpacity(0.3),
-            width: 1.5,
+            color: Colors.white.withOpacity(0.2),
           ),
         ),
         child: Column(
@@ -900,14 +753,14 @@ class _SettingsScreenState extends State<SettingsScreen> with TickerProviderStat
                 shape: BoxShape.circle,
                 gradient: LinearGradient(
                   colors: [
-                    const Color(0xFFEF4444).withOpacity(0.2),
-                    const Color(0xFFEF4444).withOpacity(0.1),
+                    Colors.red.withOpacity(0.2),
+                    Colors.red.withOpacity(0.1),
                   ],
                 ),
               ),
               child: const Icon(
-                Icons.logout_rounded,
-                color: Color(0xFFEF4444),
+                Icons.logout,
+                color: Colors.red,
                 size: 48,
               ),
             ),
@@ -933,68 +786,42 @@ class _SettingsScreenState extends State<SettingsScreen> with TickerProviderStat
             Row(
               children: [
                 Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.white.withOpacity(0.1),
-                          Colors.white.withOpacity(0.05),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.2),
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      side: BorderSide(color: Colors.white.withOpacity(0.3)),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: TextButton(
-                      onPressed: () => Navigator.of(context).pop(false),
-                      style: TextButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        'Cancel',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 15,
-                        ),
+                    child: const Text(
+                      'Cancel',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
                       ),
                     ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFEF4444).withOpacity(0.3),
-                          blurRadius: 12,
-                        ),
-                      ],
                     ),
-                    child: TextButton(
-                      onPressed: () => Navigator.of(context).pop(true),
-                      style: TextButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        'Logout',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 15,
-                        ),
+                    child: const Text(
+                      'Logout',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
                       ),
                     ),
                   ),
@@ -1009,238 +836,75 @@ class _SettingsScreenState extends State<SettingsScreen> with TickerProviderStat
 
   Widget _buildLoadingScreen() {
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(
-        children: [
-          _buildGalaxyBackground(),
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  width: 60,
-                  height: 60,
-                  child: CircularProgressIndicator(
-                    color: const Color(0xFF8B5CF6),
-                    strokeWidth: 4,
-                  ),
-                ),
-                const SizedBox(height: 32),
-                const Text(
-                  'LOADING PROFILE...',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                    letterSpacing: 2,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF000814), Color(0xFF001D3D), Color(0xFF000814)],
           ),
-        ],
+        ),
+        child: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(color: Colors.purple),
+              SizedBox(height: 24),
+              Text(
+                'LOADING PROFILE...',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 14,
+                  letterSpacing: 2,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildErrorScreen() {
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(
-        children: [
-          _buildGalaxyBackground(),
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.all(32),
-              child: Container(
-                padding: const EdgeInsets.all(40),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.white.withOpacity(0.08),
-                      Colors.white.withOpacity(0.03),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: const Color(0xFFEF4444).withOpacity(0.3),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF000814), Color(0xFF001D3D), Color(0xFF000814)],
+          ),
+        ),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, color: Colors.red, size: 64),
+                const SizedBox(height: 24),
+                Text(
+                  errorMessage ?? 'Unexpected error',
+                  style: const TextStyle(color: Colors.redAccent, fontSize: 18),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 32),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('RETRY'),
+                  onPressed: _loadDriverProfile,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.purple,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                   ),
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          colors: [
-                            const Color(0xFFEF4444).withOpacity(0.2),
-                            const Color(0xFFEF4444).withOpacity(0.1),
-                          ],
-                        ),
-                      ),
-                      child: const Icon(
-                        Icons.error_outline_rounded,
-                        color: Color(0xFFEF4444),
-                        size: 64,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      errorMessage ?? 'Unexpected error',
-                      style: const TextStyle(
-                        color: Color(0xFFEF4444),
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 32),
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFFEF4444).withOpacity(0.3),
-                            blurRadius: 12,
-                          ),
-                        ],
-                      ),
-                      child: ElevatedButton.icon(
-                        icon: const Icon(Icons.refresh_rounded),
-                        label: const Text('RETRY'),
-                        onPressed: _loadDriverProfile,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          foregroundColor: Colors.white,
-                          shadowColor: Colors.transparent,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 32,
-                            vertical: 16,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
-}
-
-// Reusing painters from previous screens
-class NebulaPainter extends CustomPainter {
-  final double animationValue;
-  NebulaPainter({required this.animationValue});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..maskFilter = const MaskFilter.blur(BlurStyle.normal, 100);
-    paint.color = const Color(0xFF5B21B6).withOpacity(0.12);
-    canvas.drawCircle(Offset(size.width * 0.2, size.height * 0.3), 200, paint);
-    paint.color = const Color(0xFF0891B2).withOpacity(0.15);
-    canvas.drawCircle(Offset(size.width * 0.75, size.height * 0.25), 180, paint);
-    paint.color = const Color(0xFFDB2777).withOpacity(0.08);
-    canvas.drawCircle(Offset(size.width * 0.6, size.height * 0.7), 160, paint);
-    paint.color = const Color(0xFF1D4ED8).withOpacity(0.1);
-    canvas.drawCircle(Offset(size.width * 0.3, size.height * 0.8), 140, paint);
-  }
-
-  @override
-  bool shouldRepaint(NebulaPainter oldDelegate) => false;
-}
-
-class EnhancedStarsPainter extends CustomPainter {
-  final double animationValue;
-  final math.Random _random = math.Random(42);
-  EnhancedStarsPainter({required this.animationValue});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint();
-    for (int i = 0; i < 200; i++) {
-      final x = _random.nextDouble() * size.width;
-      final y = _random.nextDouble() * size.height;
-      final starSize = _random.nextDouble() * 1.5 + 0.3;
-      final twinkle = (math.sin((animationValue * math.pi * 2) + i * 0.1) + 1) / 2;
-      paint.color = Colors.white.withOpacity(0.2 + (twinkle * 0.5));
-      canvas.drawCircle(Offset(x, y), starSize, paint);
-    }
-    for (int i = 0; i < 50; i++) {
-      final x = _random.nextDouble() * size.width;
-      final y = _random.nextDouble() * size.height;
-      final starSize = _random.nextDouble() * 2 + 0.8;
-      final twinkle = (math.sin((animationValue * math.pi * 2) + i * 0.3) + 1) / 2;
-      paint.color = const Color(0xFF06B6D4).withOpacity(0.3 + (twinkle * 0.4));
-      paint.maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
-      canvas.drawCircle(Offset(x, y), starSize * 3, paint);
-      paint.color = Colors.white.withOpacity(0.7 + (twinkle * 0.3));
-      paint.maskFilter = null;
-      canvas.drawCircle(Offset(x, y), starSize, paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(EnhancedStarsPainter oldDelegate) => oldDelegate.animationValue != animationValue;
-}
-
-class CosmicEffectsPainter extends CustomPainter {
-  final double animationValue;
-  CosmicEffectsPainter({required this.animationValue});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..strokeWidth = 2.5..strokeCap = StrokeCap.round;
-    for (int i = 0; i < 3; i++) {
-      final progress = (animationValue + (i * 0.33)) % 1.0;
-      if (progress < 0.15) {
-        final startX = size.width * (0.3 + i * 0.25);
-        final startY = size.height * (0.15 + i * 0.2);
-        final length = 80.0 * (progress / 0.15);
-        final gradient = LinearGradient(colors: [Colors.white, const Color(0xFF06B6D4).withOpacity(0.8), const Color(0xFF3B82F6).withOpacity(0.4), Colors.transparent]);
-        paint.shader = gradient.createShader(Rect.fromPoints(Offset(startX, startY), Offset(startX + length * 1.5, startY + length)));
-        paint.strokeWidth = 3 * (1 - progress / 0.15);
-        canvas.drawLine(Offset(startX, startY), Offset(startX + length * 1.5, startY + length), paint);
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(CosmicEffectsPainter oldDelegate) => oldDelegate.animationValue != animationValue;
-}
-
-class AmbientParticlesPainter extends CustomPainter {
-  final double animationValue;
-  final math.Random _random = math.Random(123);
-  AmbientParticlesPainter({required this.animationValue});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint();
-    for (int i = 0; i < 30; i++) {
-      final baseX = _random.nextDouble() * size.width;
-      final baseY = _random.nextDouble() * size.height;
-      final floatOffset = math.sin((animationValue * math.pi * 2) + i) * 20;
-      final x = baseX + floatOffset;
-      final y = baseY + (animationValue * size.height * 0.1) % size.height;
-      final opacity = (math.sin((animationValue * math.pi * 2) + i * 0.5) + 1) / 2;
-      paint.color = const Color(0xFF06B6D4).withOpacity(opacity * 0.15);
-      paint.maskFilter = const MaskFilter.blur(BlurStyle.normal, 15);
-      canvas.drawCircle(Offset(x, y), 3, paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(AmbientParticlesPainter oldDelegate) => oldDelegate.animationValue != animationValue;
 }

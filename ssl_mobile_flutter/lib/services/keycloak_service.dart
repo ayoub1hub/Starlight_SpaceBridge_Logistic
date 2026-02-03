@@ -7,8 +7,7 @@ class KeycloakService {
 
   static const String clientId = 'ssl-mobile';
   static const String redirectUri = 'com.ssl.app://callback';
-  static const String issuer = 'http://localhost:8079/realms/ssl-realm'; // web
-  // Pour vrai téléphone : 'http://TON_IP_PC:8079/realms/ssl-realm'
+  static const String issuer = 'http://localhost:8079/realms/ssl-realm';
 
   static Future<bool> login() async {
     try {

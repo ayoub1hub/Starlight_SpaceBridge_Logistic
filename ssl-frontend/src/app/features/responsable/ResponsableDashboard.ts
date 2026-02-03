@@ -208,28 +208,20 @@ export class ResponsableDashboardComponent implements OnInit {
   }
 
   loadResponsableName(): void {
-    // Get user info from Keycloak via AuthService
     const userInfo = this.authService.getUserInfo();
     if (userInfo) {
       const displayName = userInfo.firstName || userInfo.username || 'Responsable';
       this.responsableName.set(displayName);
-      console.log('👤 Responsable name loaded:', displayName);
     } else {
-      // Fallback to localStorage or default
       const username = localStorage.getItem('username') || 'Responsable';
       this.responsableName.set(username);
-      console.log('👤 Using fallback responsable name:', username);
     }
   }
 
   loadAssignedEntrepot(): void {
-    // Get assigned entrepot from sessionStorage
     const entrepotCode = sessionStorage.getItem('entrepot_code');
     if (entrepotCode) {
       this.assignedEntrepot.set(entrepotCode);
-      console.log('🏢 Assigned entrepot loaded:', entrepotCode);
-    } else {
-      console.warn('⚠️ No entrepot_code found in sessionStorage');
     }
   }
 
@@ -239,41 +231,14 @@ export class ResponsableDashboardComponent implements OnInit {
     // Get entrepot ID from sessionStorage
     const entrepotId = sessionStorage.getItem('entrepot_id');
 
-    console.log('📊 Loading metrics for entrepot:', entrepotId);
-    console.log('🔗 API URL:', `http://localhost:8080/api/stocks/metrics${entrepotId ? '?entrepotId=' + entrepotId : ''}`);
-
     this.stockService.getStockMetrics(entrepotId).subscribe({
       next: (data) => {
-        console.log('✅ Metrics loaded successfully:', data);
         this.metrics.set(data);
         this.isLoadingMetrics.set(false);
       },
       error: (error) => {
-        console.error('❌ Error loading metrics:', error);
-        console.error('📍 Error details:', {
-          status: error.status,
-          statusText: error.statusText,
-          message: error.message,
-          url: error.url
-        });
+        console.error('Error loading metrics:', error);
         this.isLoadingMetrics.set(false);
-
-        // Set default metrics on error
-        this.metrics.set({
-          totalProducts: 0,
-          totalValue: 0,
-          lowStockCount: 0,
-          criticalStockCount: 0
-        });
-
-        // Show user-friendly error message
-        if (error.status === 0) {
-          console.error('⚠️ Backend not reachable. Make sure Spring Boot is running on http://localhost:8080');
-        } else if (error.status === 404) {
-          console.error('⚠️ Endpoint not found. Check if /api/stocks/metrics exists in your backend');
-        } else if (error.status === 403 || error.status === 401) {
-          console.error('⚠️ Authentication/Authorization error. Check Keycloak token');
-        }
       }
     });
   }
@@ -288,12 +253,10 @@ export class ResponsableDashboardComponent implements OnInit {
   }
 
   initializeStock(): void {
-    console.log('🏭 Initialize stock clicked for entrepot:', this.assignedEntrepot());
     alert('Stock initialization feature - Coming soon!');
   }
 
   refreshMetrics(): void {
-    console.log('🔄 Refreshing metrics...');
     this.loadMetrics();
   }
 }

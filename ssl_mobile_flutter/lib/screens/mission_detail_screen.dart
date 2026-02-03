@@ -118,6 +118,7 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> with SingleTi
           mission = jsonDecode(response.body);
           isLoading = false;
         });
+        print(mission);
         _animationController.forward();
       } else if (response.statusCode == 401) {
         await _storage.deleteAll();

@@ -131,15 +131,41 @@ public class DeliveryService {
         return deliveryMapper.toDto(delivery);
     }
 
-    public DeliveryDto updateDeliveryStatus(UUID id, String status) {
-        Delivery delivery = deliveryRepository.findById(id)
+    public DeliveryDto updateDeliveryStatus(UUID deliveryId, String newStatus) {
+        Delivery delivery = deliveryRepository.findById(deliveryId)
                 .orElseThrow(() -> new RuntimeException("Livraison non trouvée"));
 
-        delivery.setStatus(status);
-        if ("DELIVERED".equals(status) && delivery.getDeliveredAt() == null) {
+        // Ancien statut pour comparaison
+        String oldStatus = delivery.getStatus();
+
+        delivery.setStatus(newStatus);
+
+        if ("DELIVERED".equals(newStatus) && delivery.getDeliveredAt() == null) {
             delivery.setDeliveredAt(LocalDateTime.now());
         }
+
         delivery.setUpdatedAt(LocalDateTime.now());
+
+        // chauffeur
+        if (delivery.getDriver() != null) {
+            Driver driver = delivery.getDriver();
+
+            if ("IN_TRANSIT".equals(newStatus) && !"IN_TRANSIT".equals(oldStatus)) {
+                // chauffeur plus disponible
+                driver.setAvailable(false);
+                driver.setStatus("IN_MISSION");
+                System.out.println("Chauffeur " + driver.getId() + " marqué INDISPONIBLE (mission " + deliveryId + ")");
+            }
+            else if (("DELIVERED".equals(newStatus) || "COMPLETED".equals(newStatus) || "CANCELLED".equals(newStatus))
+                    && "IN_TRANSIT".equals(oldStatus)) {
+                // chauffeur redevient disponible
+                driver.setAvailable(true);
+                driver.setStatus("AVAILABLE");
+                System.out.println("Chauffeur " + driver.getId() + " re-devient DISPONIBLE (mission terminée " + deliveryId + ")");
+            }
+
+            driverRepository.save(driver);  // Sauvegarde le changement de statut
+        }
 
         Delivery updated = deliveryRepository.save(delivery);
         return deliveryMapper.toDto(updated);
